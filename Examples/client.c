@@ -49,7 +49,7 @@ int main(int argc, char** argv) {
 	
 	adresse_locale.sin_port = htons(5555);
 	
-	printf("numero de port pour la connexion au servuer : %d \n", ntohs(adresse_locale.sin_port));
+	printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
 	
 	if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("erreur : impossible de creer la socket de connexion avec le serveur.");
