@@ -5,49 +5,103 @@
 #include <netdb.h>
 #include <string.h>
 #include <pthread.h>
+#include <sys/time.h>
 
 #include "file.h"
 #include "types.h"
 
-#define OUAICH 0
+#define	h_addr h_addr_list[0]
 #define TAILLE_MAX_NOM 256
-
+#define NB_SLOTS_SERVEUR 5
 
 typedef struct sockaddr sockaddr;
 typedef struct sockaddr_in sockaddr_in;
 typedef struct hostent hostent;
 typedef struct servent servent;
 
+/* Variables globales */
+int slots_serveurs_restants = NB_SLOTS_SERVEUR;
+utilisateur** liste_connectes;
+
+/*---------------------------------------*/
+int copier_donnees(char *dest, const char *src, int debut, int longueur)
+{	
+	int i = debut;
+	int j = 0;
+	while ( (src[i] != ';') && (src[i] != '\0') && (j < longueur) )
+	{
+		dest[j] = src[i];
+		i++;
+		j++;
+	}
+	
+	while (src[i] != ';')
+	{
+		i++;
+	}
+	dest[j] = '\0';
+	
+	return i;
+}
+
 
 /*---------------------------------------*/
 void renvoi(void *arg) {
 	int* tmp = (int*)arg;
-	int nsd = *tmp;
+	int sock = *tmp;
 	
 	char buffer[256];
-	int longueur;
-	if((longueur = read(nsd, buffer, sizeof(buffer))) <= 0) {
+	int longueur = read(sock, buffer, sizeof(buffer));
+	printf("longueur du texte reçu : %d\n", longueur);
+	
+	if(longueur <= 0)
+	{
+		perror("read");
 		return;
 	}
 	
-	printf("message lu : %s \n", buffer);
-	buffer[0] = 'R';
-	buffer[1] = 'E';
-	buffer[longueur] = '#';
-	buffer[longueur+1] = '\0';
+	buffer[longueur] = '\0';
 	
-	printf("message apres traitement : %s \n", buffer);
+	/* Décrémente le nombre de slots disponibles sur le serveur */
+	if (slots_serveurs_restants == 0)
+	{
+		printf("Pas d'espace disponible pour les nouveaux utilisateurs.\n");
+		return;
+	}
+	else
+	{
+		slots_serveurs_restants--;
+	}
 	
-	printf("renvoi du message traite. \n");
-	
-	/* mise en attente du programme pour simuler un délai de transmission */
-	sleep(3);
+	/* Contruit dynamiquement une structure de données utilisateur */
+	utilisateur *nouvel_utilisateur = malloc(sizeof(utilisateur));
+	if(nouvel_utilisateur == NULL)
+	{
+		perror("malloc");
+		return;
+	}
+	nouvel_utilisateur->pseudo[LONGUEUR_MAX_PSEUDO] = '\0';
+	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
 
-	write(nsd, buffer, strlen(buffer) + 1);
-	printf("message envoye.\n");
+	int indice = copier_donnees(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
+	copier_donnees(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	nouvel_utilisateur->dernier_contact = tv.tv_sec;
 	
-	close(nsd);
+	/* TODO : Alimente le tableau de gens connectés */
 	
+	/* TODO : envoyer la liste des connectés */
+	write(sock, buffer, strlen(buffer));
+	
+	/* TODO : Ecouter en boucle les requêtes du client et les traiter */
+	
+	/* TODO : En cas de time_out ou de départ, nettoyer tout (free, ...) */
+	free(nouvel_utilisateur);
+	
+	/* Ferme le socket, libère le slot et termine le thread */	
+	close(sock);
+	slots_serveurs_restants++;
 	return;
 }
 
@@ -55,7 +109,7 @@ void renvoi(void *arg) {
 
 /*---------------------------------------*/
 int main(int argc, char** argv) {
-
+	
 	File *suite;
 	char *nom;
 	if ((suite = (File *) malloc (sizeof (File))) == NULL)
@@ -64,16 +118,13 @@ int main(int argc, char** argv) {
 	return -1;
 	initialisation (suite);
 	
-	enfiler (suite, suite->fin, "lol1");
-	enfiler (suite, suite->fin, "lol2");
-	enfiler (suite, suite->fin, "lol3");
-	enfiler (suite, suite->fin, "lol4");
+	liste_connectes = malloc(sizeof(utilisateur*) * NB_SLOTS_SERVEUR);
+	if(liste_connectes == NULL)
+	{
+		perror("malloc");
+		exit(1);
+	}
 	
-	printf("Défile : %s\n", de_filer(suite));
-	printf("Défile : %s\n", de_filer(suite));
-	printf("Défile : %s\n", de_filer(suite));
-	printf("Défile : %s\n", de_filer(suite));
-
 	int socket_descriptor, 			/* descripteur de socket */
 	    nouv_socket_descriptor, 		/* [nouveau] descripteur de socket */
 	    longueur_adresse_courante; 		/* longueur d'adresse courante du client */
@@ -91,7 +142,7 @@ int main(int argc, char** argv) {
 
 	/* récupération de la structure d'adresse en utilisant le nom */
 	if((ptr_hote = gethostbyname(machine)) == NULL) {
-		perror("erreur : impossible de trouver le serveur a partir de son nom");
+		perror("erreur : impossible de trouver le serveur à partir de son nom");
 		exit(1);
 	}
 	
@@ -105,7 +156,7 @@ int main(int argc, char** argv) {
 	/* SOLUTION 2 */
 	adresse_locale.sin_port = htons(5555);
 	
-	printf("numero de port pour la connexio au serveur : %d \n", ntohs(adresse_locale.sin_port));
+	printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
 	
 	/* création du socket */
 	if((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0 )) < 0) {
@@ -138,7 +189,7 @@ int main(int argc, char** argv) {
 		
 	}
 	close(socket_descriptor);
+	free(liste_connectes);
 	
-	return OUAICH;
+	return EXIT_SUCCESS;
 }
-

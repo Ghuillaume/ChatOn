@@ -1,5 +1,7 @@
 CC = gcc
-LDFLAGS = -pthread
+LDFLAGS = -pthread -std=c89
+
+.PHONY = clean
 
 server: main.o file.o
 	$(CC) -o $@ $^ $(LDFLAGS)
@@ -9,7 +11,6 @@ main.o: main.c file.c
 	
 file.o: file.c
 	$(CC) $(CFLAGS) -c $^ $(LDFLAGS)
-	
 	
 clean:
 	-rm -rf *.o *.gch

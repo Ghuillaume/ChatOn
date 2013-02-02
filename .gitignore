@@ -1,0 +1,5 @@
+*.o
+Server/server
+Examples/client
+Examples/server
+
