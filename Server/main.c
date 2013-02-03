@@ -11,7 +11,7 @@
 #include "types.h"
 
 #define	h_addr h_addr_list[0]
-#define TAILLE_MAX_NOM 256
+#define TAILLE_MAX 256
 #define NB_SLOTS_SERVEUR 5
 
 typedef struct sockaddr sockaddr;
@@ -46,15 +46,15 @@ int copier_donnees(char *dest, const char *src, int debut, int longueur)
 
 
 /*---------------------------------------*/
-void renvoi(void *arg) {
+void traiter_requete(void *arg) {
 	int* tmp = (int*)arg;
 	int sock = *tmp;
 	
-	char buffer[256];
+	char buffer[TAILLE_MAX];
 	int longueur = read(sock, buffer, sizeof(buffer));
 	printf("longueur du texte reçu : %d\n", longueur);
 	
-	if(longueur <= 0)
+	if(longueur < 0)
 	{
 		perror("read");
 		return;
@@ -89,17 +89,77 @@ void renvoi(void *arg) {
 	gettimeofday(&tv,NULL);
 	nouvel_utilisateur->dernier_contact = tv.tv_sec;
 	
-	/* TODO : Alimente le tableau de gens connectés */
+	/* Alimente le tableau de gens connectés */
+	int ajoute = 0;
+	int i = 0;
+	while (!ajoute && i < NB_SLOTS_SERVEUR)
+	{
+		if(liste_connectes[i] == NULL)
+		{
+			liste_connectes[i] = nouvel_utilisateur;
+			ajoute = 1;
+		}
+		else
+		{
+			i++;
+		}
+	}
 	
-	/* TODO : envoyer la liste des connectés */
+	/* Envoie la liste des pseudos des gens connectés */
+	char pseudos_connectes[156] = "";
+	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
+	{
+		if (liste_connectes[i] != NULL)
+		{
+			char pseudo_courant[LONGUEUR_MAX_PSEUDO+1] = "";
+			strcpy(pseudo_courant, liste_connectes[i]->pseudo);
+			strcat(pseudos_connectes, strcat(pseudo_courant, ";"));
+		}
+	}
+	
+	printf("pseudos connectés : %s\n", pseudos_connectes);
+	memset(buffer, '\0', TAILLE_MAX);
+	strcpy(buffer, pseudos_connectes);
 	write(sock, buffer, strlen(buffer));
 	
 	/* TODO : Ecouter en boucle les requêtes du client et les traiter */
+	int fin_connexion = 0;
+	while (!fin_connexion)
+	{
+		memset(buffer, '\0', TAILLE_MAX);
+		int longueur = read(sock, buffer, sizeof(buffer));
+		sleep(1);
+		if(longueur < 0)
+		{
+			perror("read");
+			return;
+		}
+
+		buffer[longueur] = '\0';
+		printf("%s : \"%s\"\n", nouvel_utilisateur->pseudo, buffer);
+		
+		if (strncmp(buffer, "/quit", 4) == 0)
+		{
+			fin_connexion = 1;	
+		}
+		else if (strncmp(buffer, "/msg", 4) == 0)
+		{
+			/* TODO */
+			printf("msg\n");
+		}
+		else if (strncmp(buffer, "/all", 4) == 0)
+		{
+			/* TODO */
+			printf("all\n");
+		}
+		else
+		{
+			/* printf("Commande non reconnue.\n"); */
+		}
+	}
 	
-	/* TODO : En cas de time_out ou de départ, nettoyer tout (free, ...) */
+	/* Ferme le socket, libère le slot et termine le thread */
 	free(nouvel_utilisateur);
-	
-	/* Ferme le socket, libère le slot et termine le thread */	
 	close(sock);
 	slots_serveurs_restants++;
 	return;
@@ -136,9 +196,9 @@ int main(int argc, char** argv) {
 	
 	hostent* ptr_hote;			/* les infos récupérées sur la machine hôte */
 	servent* ptr_service;			/* les infos récupérées sur le service de la machine */
-	char machine[TAILLE_MAX_NOM + 1]; 	/* nom de la machine locale */
+	char machine[TAILLE_MAX + 1]; 	/* nom de la machine locale */
 	
-	gethostname(machine, TAILLE_MAX_NOM);	/* récupération du nom de la machine */
+	gethostname(machine, TAILLE_MAX);	/* récupération du nom de la machine */
 
 	/* récupération de la structure d'adresse en utilisant le nom */
 	if((ptr_hote = gethostbyname(machine)) == NULL) {
@@ -182,11 +242,10 @@ int main(int argc, char** argv) {
 			exit(1);
 		}
 		
-		if(pthread_create(&clientHandler, NULL, renvoi, (void*)&nouv_socket_descriptor) < 0) {
+		if(pthread_create(&clientHandler, NULL, traiter_requete, (void*)&nouv_socket_descriptor) < 0) {
 			perror("Thread problem\n");
 			exit(1);
 		}
-		
 	}
 	close(socket_descriptor);
 	free(liste_connectes);

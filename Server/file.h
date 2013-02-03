@@ -18,10 +18,10 @@ void initialisation (File * suite);
 
 
 /* ENFILER*/
-int enfiler (File * suite, Element * courant, char *donnee);
+int ajouter_file (File * suite, Element * courant, char *donnee);
 
 /* DE_FILER*/
-char* de_filer (File * suite);
+char* retirer_file (File * suite);
 
 /* FirstInFirstOut */
 #define file_donnee(suite) suite->debut->donnee

@@ -6,8 +6,8 @@ void initialisation (File * suite){
   suite->taille = 0;
 }
 
-/* enfiler (ajouter) un élément dans la file */
-int enfiler (File * suite, Element * courant, char *donnee){
+/* ajouter_file (ajouter) un élément dans la file */
+int ajouter_file (File * suite, Element * courant, char *donnee){
   Element *nouveau_element;
   if ((nouveau_element = (Element *) malloc (sizeof (Element))) == NULL)
     return -1;
@@ -31,8 +31,8 @@ int enfiler (File * suite, Element * courant, char *donnee){
   return 0;
 }
 
-/* de_filer (supprimer) un élément de la file */
-char* de_filer (File * suite){
+/* retirer_file (supprimer) un élément de la file */
+char* retirer_file (File * suite){
 	Element *supp_element;
 	if (suite->taille == 0)
 	return "\0\0";
