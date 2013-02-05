@@ -35,12 +35,14 @@ int copier_donnees(char *dest, const char *src, int debut, int longueur)
 		j++;
 	}
 	
-	while (src[i] != ';')
-	{
-		i++;
-	}
+	/* On s'arrête au prochain symbole ";" dans la chaine source */
+	for(; src[i] != ';'; i++);
 	dest[j] = '\0';
 	
+	/*
+	On retourne l'indice courant de la chaine afin de pouvoir la retraiter
+	sans repartir du début.
+	*/
 	return i;
 }
 
@@ -50,6 +52,7 @@ void traiter_requete(void *arg) {
 	int* tmp = (int*)arg;
 	int sock = *tmp;
 	
+	/* Réception de la requête */
 	char buffer[TAILLE_MAX];
 	int longueur = read(sock, buffer, sizeof(buffer));
 	printf("longueur du texte reçu : %d\n", longueur);
@@ -83,6 +86,7 @@ void traiter_requete(void *arg) {
 	nouvel_utilisateur->pseudo[LONGUEUR_MAX_PSEUDO] = '\0';
 	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
 
+	/* On remplit les différents champs */
 	int indice = copier_donnees(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
 	copier_donnees(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
 	struct timeval tv;
@@ -121,26 +125,26 @@ void traiter_requete(void *arg) {
 	memset(buffer, '\0', TAILLE_MAX);
 	strcpy(buffer, pseudos_connectes);
 	write(sock, buffer, strlen(buffer));
+	sleep(1);
 	
 	/* TODO : Ecouter en boucle les requêtes du client et les traiter */
 	int fin_connexion = 0;
 	while (!fin_connexion)
 	{
 		memset(buffer, '\0', TAILLE_MAX);
-		int longueur = read(sock, buffer, sizeof(buffer));
-		sleep(1);
+		longueur = read(sock, buffer, sizeof(buffer));
 		if(longueur < 0)
 		{
 			perror("read");
 			return;
 		}
 
-		buffer[longueur] = '\0';
+
 		printf("%s : \"%s\"\n", nouvel_utilisateur->pseudo, buffer);
 		
 		if (strncmp(buffer, "/quit", 4) == 0)
 		{
-			fin_connexion = 1;	
+			fin_connexion = 1;
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
@@ -159,6 +163,7 @@ void traiter_requete(void *arg) {
 	}
 	
 	/* Ferme le socket, libère le slot et termine le thread */
+	printf("fin connexion\n");
 	free(nouvel_utilisateur);
 	close(sock);
 	slots_serveurs_restants++;

@@ -53,7 +53,8 @@ int main(int argc, char** argv) {
 		printf("L'adresse IP est malformée");
 	}
 	
-	/* DEBUG ONLY */
+	/* DEBUG ONLY :  affichage du message */
+	/* TODO : à enlever*/
 	strcat(msg, strcat(pseudo, ";"));
 	strcat(msg, strcat(ip, ";"));
 	printf("msg : %s\n", msg);
@@ -96,6 +97,7 @@ int main(int argc, char** argv) {
 		exit(1);
 	}
 
+	/* Affichage de cette liste */
 	printf("Liste des connectés :\n"); 
 	char* pseudo_connecte = strtok(buffer, DELIM_PV);
 	while(pseudo_connecte != NULL)
@@ -111,11 +113,11 @@ int main(int argc, char** argv) {
 		memset(buffer, '\0', TAILLE_MAX);
 		printf("Entrer le texte à envoyer : ");
 		fgets(buffer, TAILLE_MAX-1, stdin);
-		strcat(buffer, "\n");
 		write(1,buffer,strlen(buffer));
 		if(strncmp(buffer, "/quit", 4) == 0)
 		{
 			fin_connexion = 1;
+			sleep(1);
 		}
 	}
 	
