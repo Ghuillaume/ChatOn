@@ -1,5 +1,5 @@
 CC = gcc
-LDFLAGS = -pthread -std=c89
+LDFLAGS = -pthread -std=c99
 
 .PHONY = clean
 

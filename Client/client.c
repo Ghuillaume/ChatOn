@@ -76,12 +76,12 @@ void writeToServ(void* arg) {
 		
 	}
 	else {
-		write(socket,buffOut,strlen(buffOut));
+		/*write(socket,buffOut,strlen(buffOut));
 		if(strncmp(buffOut, "/quit", 4) == 0)
 		{
 			// TODO quitter
 			sleep(1);
-		}
+		}*/
 	}
 }
 
@@ -163,7 +163,7 @@ int main(int argc, char** argv) {
 	if(pthread_create(&readLoop, NULL, readFromServ, (void*)&socket_descriptor) < 0) {
 		perror("Thread problem\n");
 		exit(1);
-	}
+	}/**/
 	
 	/* Boucle d'écriture *
 	pthread_t writeLoop;

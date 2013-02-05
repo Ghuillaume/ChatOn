@@ -53,8 +53,8 @@ int copier_donnees(char *dest, const char *src, int debut, int longueur)
 void traiter_requete(void *arg) {
 	int* tmp = (int*)arg;
 	int sock = *tmp;
-	
-	/* Réception de la requête */
+
+	// Réception de la requête
 	char buffer[TAILLE_MAX];
 	int longueur = read(sock, buffer, sizeof(buffer));
 	printf("longueur du texte reçu : %d\n", longueur);
@@ -67,7 +67,7 @@ void traiter_requete(void *arg) {
 	
 	buffer[longueur] = '\0';
 	
-	/* Décrémente le nombre de slots disponibles sur le serveur */
+	// Décrémente le nombre de slots disponibles sur le serveur
 	if (slots_serveurs_restants == 0)
 	{
 		printf("Pas d'espace disponible pour les nouveaux utilisateurs.\n");
@@ -78,7 +78,7 @@ void traiter_requete(void *arg) {
 		slots_serveurs_restants--;
 	}
 	
-	/* Contruit dynamiquement une structure de données utilisateur */
+	// Contruit dynamiquement une structure de données utilisateur 
 	utilisateur *nouvel_utilisateur = malloc(sizeof(utilisateur));
 	if(nouvel_utilisateur == NULL)
 	{
@@ -88,14 +88,15 @@ void traiter_requete(void *arg) {
 	nouvel_utilisateur->pseudo[LONGUEUR_MAX_PSEUDO] = '\0';
 	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
 
-	/* On remplit les différents champs */
+	// On remplit les différents champs
+	// TODO ici ERREUR DE SEG !!!! (lancement de plusieurs clients)
 	int indice = copier_donnees(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
 	copier_donnees(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
 	nouvel_utilisateur->dernier_contact = tv.tv_sec;
 	
-	/* Alimente le tableau de gens connectés */
+	// Alimente le tableau de gens connectés
 	int ajoute = 0;
 	int i = 0;
 	while (!ajoute && i < NB_SLOTS_SERVEUR)
@@ -111,7 +112,7 @@ void traiter_requete(void *arg) {
 		}
 	}
 	
-	/* Envoie la liste des pseudos des gens connectés */
+	// Envoie la liste des pseudos des gens connectés
 	char pseudos_connectes[156] = "connected:";
 	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
 	{
@@ -129,12 +130,9 @@ void traiter_requete(void *arg) {
 	write(sock, buffer, strlen(buffer));
 	sleep(1);
 	
-	/* TODO : Ecouter en boucle les requêtes du client et les traiter */
-	int fin_connexion = 0;
-	while (!fin_connexion)
+	// TODO : Ecouter en boucle les requêtes du client et les traiter
+	while (longueur = read(sock, buffer, sizeof(buffer)))
 	{
-		memset(buffer, '\0', TAILLE_MAX);
-		longueur = read(sock, buffer, sizeof(buffer));
 		if(longueur < 0)
 		{
 			perror("read");
@@ -146,25 +144,27 @@ void traiter_requete(void *arg) {
 		
 		if (strncmp(buffer, "/quit", 4) == 0)
 		{
-			fin_connexion = 1;
+			close(sock);
+			return; // désolé pour la craditude mais sinon ça marche pas
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
-			/* TODO */
+			// TODO
 			printf("msg\n");
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
 		{
-			/* TODO */
+			// TODO
 			printf("all\n");
 		}
 		else
 		{
-			/* printf("Commande non reconnue.\n"); */
+			printf("Commande non reconnue.\n");
 		}
+		memset(buffer, '\0', TAILLE_MAX);
 	}
 	
-	/* Ferme le socket, libère le slot et termine le thread */
+	// Ferme le socket, libère le slot et termine le thread
 	printf("fin connexion\n");
 	free(nouvel_utilisateur);
 	close(sock);
@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
 	/* SOLUTION 2 */
 	adresse_locale.sin_port = htons(5555);
 	
-	printf("numero de port pour la connexion au serveur : %d \n", ntohs(adresse_locale.sin_port));
+	printf("Écoute sur le port %d \n", ntohs(adresse_locale.sin_port));
 	
 	/* création du socket */
 	if((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0 )) < 0) {
