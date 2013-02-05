@@ -57,6 +57,8 @@ void readFromServ(void* arg) {
 		
 		
 	}
+	
+	return;
 }
 
 void writeToServ(void* arg) {
@@ -76,13 +78,15 @@ void writeToServ(void* arg) {
 		
 	}
 	else {
-		/*write(socket,buffOut,strlen(buffOut));
+		write(socket,buffOut,strlen(buffOut));
 		if(strncmp(buffOut, "/quit", 4) == 0)
 		{
-			// TODO quitter
-			sleep(1);
-		}*/
+			// A la place de null, possibilité de renvoyer un void*
+			pthread_exit(NULL);
+		}
 	}
+	
+	return;
 }
 
 int main(int argc, char** argv) {
@@ -165,15 +169,18 @@ int main(int argc, char** argv) {
 		exit(1);
 	}/**/
 	
-	/* Boucle d'écriture *
+	/* Boucle d'écriture */
 	pthread_t writeLoop;
 	if(pthread_create(&writeLoop, NULL, writeToServ, (void*)&socket_descriptor) < 0) {
 		perror("Thread problem\n");
 		exit(1);
 	}/**/
 	
+	// On attends que le processus d'écriture demande la fermeture avant de quitter
+	int *res = NULL;
+	pthread_join(&writeLoop, (void *) &res);
 	
-	/* Fermeture du socket et extinction du programme */
+	// Fermeture du socket et extinction du programme
 	close(socket_descriptor);
 	return 0;
 }
