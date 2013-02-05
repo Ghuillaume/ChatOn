@@ -9,6 +9,7 @@
 
 #include "file.h"
 #include "types.h"
+#include "../tools/common.h"
 
 #define	h_addr h_addr_list[0]
 #define TAILLE_MAX 256
@@ -22,29 +23,6 @@ typedef struct servent servent;
 /* Variables globales */
 int slots_serveurs_restants = NB_SLOTS_SERVEUR;
 utilisateur** liste_connectes;
-
-/*---------------------------------------*/
-int copier_donnees(char *dest, const char *src, int debut, int longueur)
-{	
-	int i = debut;
-	int j = 0;
-	while ( (src[i] != ';') && (src[i] != '\0') && (j < longueur) )
-	{
-		dest[j] = src[i];
-		i++;
-		j++;
-	}
-	
-	/* On s'arrête au prochain symbole ";" dans la chaine source */
-	for(; src[i] != ';'; i++);
-	dest[j] = '\0';
-	
-	/*
-	On retourne l'indice courant de la chaine afin de pouvoir la retraiter
-	sans repartir du début.
-	*/
-	return i;
-}
 
 
 /***********************************************************/
@@ -89,7 +67,6 @@ void traiter_requete(void *arg) {
 	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
 
 	// On remplit les différents champs
-	// TODO ici ERREUR DE SEG !!!! (lancement de plusieurs clients)
 	int indice = copier_donnees(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
 	copier_donnees(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
 	struct timeval tv;
@@ -128,24 +105,31 @@ void traiter_requete(void *arg) {
 	memset(buffer, '\0', TAILLE_MAX);
 	strcpy(buffer, pseudos_connectes);
 	write(sock, buffer, strlen(buffer));
-	sleep(1);
+	
+	memset(buffer, '\0', TAILLE_MAX);
+	longueur = read(sock, buffer, sizeof(buffer));
 	
 	// TODO : Ecouter en boucle les requêtes du client et les traiter
-	while (longueur = read(sock, buffer, sizeof(buffer)))
+	int sortie = 0; 
+	while (!sortie)
 	{
-		if(longueur < 0)
+		if(longueur <= 0)
 		{
 			perror("read");
 			return;
 		}
 
-
+		// On remplace le dernier caractère \n par \0 pour simplifier l'affichage
+		if(strlen(buffer) > 1)
+		{
+			buffer[strlen(buffer)-1] = '\0';		
+		}
+		
 		printf("%s : \"%s\"\n", nouvel_utilisateur->pseudo, buffer);
 		
 		if (strncmp(buffer, "/quit", 4) == 0)
 		{
-			close(sock);
-			return; // désolé pour la craditude mais sinon ça marche pas
+			sortie = 1;
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
@@ -161,7 +145,12 @@ void traiter_requete(void *arg) {
 		{
 			printf("Commande non reconnue.\n");
 		}
+		
 		memset(buffer, '\0', TAILLE_MAX);
+		if(!sortie)
+		{
+			longueur = read(sock, buffer, sizeof(buffer));
+		}
 	}
 	
 	// Ferme le socket, libère le slot et termine le thread
