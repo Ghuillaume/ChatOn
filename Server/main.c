@@ -47,7 +47,9 @@ int copier_donnees(char *dest, const char *src, int debut, int longueur)
 }
 
 
-/*---------------------------------------*/
+/***********************************************************/
+/* Code du thread correspondant au traitement d'un client  */
+/***********************************************************/
 void traiter_requete(void *arg) {
 	int* tmp = (int*)arg;
 	int sock = *tmp;
@@ -110,7 +112,7 @@ void traiter_requete(void *arg) {
 	}
 	
 	/* Envoie la liste des pseudos des gens connectés */
-	char pseudos_connectes[156] = "";
+	char pseudos_connectes[156] = "connected:";
 	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
 	{
 		if (liste_connectes[i] != NULL)
@@ -178,9 +180,9 @@ int main(int argc, char** argv) {
 	File *suite;
 	char *nom;
 	if ((suite = (File *) malloc (sizeof (File))) == NULL)
-	return -1;
+		return -1;
 	if ((nom = (char *) malloc (50 * sizeof (char))) == NULL)
-	return -1;
+		return -1;
 	initialisation (suite);
 	
 	liste_connectes = malloc(sizeof(utilisateur*) * NB_SLOTS_SERVEUR);

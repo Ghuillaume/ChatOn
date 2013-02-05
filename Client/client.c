@@ -18,6 +18,73 @@ typedef struct servent servent;
 #define TAILLE_MAX 257
 #define DELIM_PV ";"
 
+void readFromServ(void* arg) {
+
+	int* tmp = (int*)arg;
+	int socket = *tmp;
+	
+	char buffIn[TAILLE_MAX];
+	int longueur;
+
+	while(longueur = read(socket, buffIn, sizeof(buffIn)))
+	{
+		if(longueur <= 0)
+		{
+			perror("read");
+			exit(1);
+		}
+		
+		
+		// Protocole de lecture
+		
+		if(strncmp(buffIn, "connected:", 10) == 0) {
+			// Affichage de la liste des connectés
+			printf("Liste des connectés :\n"); 
+			char* pseudo_connecte = strtok(buffIn, DELIM_PV);
+			while(pseudo_connecte != NULL)
+			{
+				fprintf(stdout, "| %s |", pseudo_connecte);
+				pseudo_connecte = strtok(NULL, DELIM_PV);
+			}
+			printf("\n");
+		}
+		
+		else if(strncmp(buffIn, "welcome:", 8) == 0) {
+			// Affichage du message de bienvenue
+		}
+		
+		// etc
+		
+		
+	}
+}
+
+void writeToServ(void* arg) {
+
+	int* tmp = (int*)arg;
+	int socket = *tmp;
+	
+	char buffOut[TAILLE_MAX];
+	
+	
+	memset(buffOut, '\0', TAILLE_MAX);
+	printf("Entrer le texte à envoyer : ");
+	fgets(buffOut, TAILLE_MAX-1, stdin);
+	
+	if(strncmp(buffOut, "/help", 5) == 0) {
+		// Affichage de l'aide
+		
+	}
+	else {
+		write(socket,buffOut,strlen(buffOut));
+		if(strncmp(buffOut, "/quit", 4) == 0)
+		{
+			// TODO quitter
+			sleep(1);
+		}
+	}
+}
+
 int main(int argc, char** argv) {
 
 	int socket_descriptor, longueur; 	// descripteur de socket, longueur du buffer utilisé
@@ -54,7 +121,7 @@ int main(int argc, char** argv) {
 	}
 	
 	/* DEBUG ONLY :  affichage du message */
-	/* TODO : à enlever*/
+	/* TODO : à enlever
 	strcat(msg, strcat(pseudo, ";"));
 	strcat(msg, strcat(ip, ";"));
 	printf("msg : %s\n", msg);
@@ -88,38 +155,23 @@ int main(int argc, char** argv) {
 		exit(1);
 	}
 	
-	/* Récupération de la liste des personnes connectées */	
-	int fin_connexion = 0;
-	longueur = read(socket_descriptor, buffer, sizeof(buffer));
-	if(longueur <= 0)
-	{
-		perror("read");
+	printf("\n\n\t****************************************\n\t**************** ChatOn ****************\n\t****************************************\n\n\tPour avoir la liste des commandes disponibles, tapez /help à tout moment\n\n");
+	
+	
+	/* Boucle d'écoute */
+	pthread_t readLoop;
+	if(pthread_create(&readLoop, NULL, readFromServ, (void*)&socket_descriptor) < 0) {
+		perror("Thread problem\n");
 		exit(1);
 	}
-
-	/* Affichage de cette liste */
-	printf("Liste des connectés :\n"); 
-	char* pseudo_connecte = strtok(buffer, DELIM_PV);
-	while(pseudo_connecte != NULL)
-	{
-		fprintf(stdout, "| %s |", pseudo_connecte);
-		pseudo_connecte = strtok(NULL, DELIM_PV);
-	}
-	printf("\n");
 	
-	/* TODO : Créer deux threads : un d'envoi, un de réception */
-	while(!fin_connexion) {
-		/* Nettoyage du buffer et remplissage du buffer avec les entrées-clavier */
-		memset(buffer, '\0', TAILLE_MAX);
-		printf("Entrer le texte à envoyer : ");
-		fgets(buffer, TAILLE_MAX-1, stdin);
-		write(1,buffer,strlen(buffer));
-		if(strncmp(buffer, "/quit", 4) == 0)
-		{
-			fin_connexion = 1;
-			sleep(1);
-		}
-	}
+	/* Boucle d'écriture *
+	pthread_t writeLoop;
+	if(pthread_create(&writeLoop, NULL, writeToServ, (void*)&socket_descriptor) < 0) {
+		perror("Thread problem\n");
+		exit(1);
+	}/**/
+	
 	
 	/* Fermeture du socket et extinction du programme */
 	close(socket_descriptor);
