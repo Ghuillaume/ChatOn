@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
     QApplication a(argc, argv);
 
-    Window w(0, socket_descriptor);
+    Window w(0, socket_descriptor, pseudo);
     w.show();
 
     w.addConnected("machin");

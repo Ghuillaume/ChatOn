@@ -30,7 +30,7 @@ class Window : public QMainWindow
     Q_OBJECT
     
 	public:
-        explicit Window(QWidget *parent = 0, int serverSocket = 0);
+        explicit Window(QWidget *parent = 0, int serverSocket = 0, string pseudo = "Guest");
 		~Window();
 
         void addConnected(string name);
@@ -44,6 +44,7 @@ class Window : public QMainWindow
 
 	private:
         int serverSocket;
+        string pseudo;
 
 		QWidget *centralWidget;
 		
@@ -62,6 +63,7 @@ class Window : public QMainWindow
     public slots:
         void newTab(QListWidgetItem *itemClicked);
         void textEntered();
+        void close();
 };
 
 #endif // WINDOW_HPP

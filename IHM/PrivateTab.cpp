@@ -34,7 +34,7 @@ void PrivateTab::textEntered() {
             this->history->append(this->mainWindow->commandProcessing(texte));
         }
         else {
-            this->history->append("Moi : " + this->inputText->toPlainText());
+            this->history->append("Moi : " + texte);
             this->mainWindow->sendText(texte, this->mainWindow->tabWidget->tabText(this->mainWindow->tabWidget->indexOf(this)).toStdString());
         }
     }

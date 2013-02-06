@@ -1,11 +1,16 @@
 #include "Window.hpp"
 
-Window::Window(QWidget *parent, int serverSocket) : QMainWindow(parent)
+Window::Window(QWidget *parent, int serverSocket, string pseudo) : QMainWindow(parent)
 {
     this->serverSocket = serverSocket;
+    this->pseudo = pseudo;
 
     //this->resize(APP_WIDTH, APP_HEIGHT);
     this->setFixedSize(APP_WIDTH, APP_HEIGHT);
+    QString title = "ChatOn - ";
+    title += pseudo.c_str();
+    this->setWindowTitle(title);
+
 
     /* Menubar */
     menubar = new QMenuBar(this);
@@ -22,6 +27,8 @@ Window::Window(QWidget *parent, int serverSocket) : QMainWindow(parent)
         quitItem->setObjectName("quitItem");
         fileMenu->addAction(quitItem);
         quitItem->setText("Quitter");
+        QObject::connect(quitItem, SIGNAL(triggered()), this, SLOT(close()));
+        QObject::connect(this, SIGNAL(destroyed()), this, SLOT(close()));
         
 
     // Central widget
@@ -114,7 +121,7 @@ void Window::textEntered() {
             this->history->append(this->commandProcessing(texte));
         }
         else {
-            this->history->append("Moi : " + this->inputText->toPlainText());
+            this->history->append("Moi : " + texte);
             sendText(texte, "all");
         }
     }
@@ -147,12 +154,17 @@ QString Window::commandProcessing(QString text) {
         result += QString::fromUtf8("/help : afficher l'aide ; /quit : se déconnecter");
     }
     else if(text == "/quit") {
-        //close(serverSocket);
-        exit(1);
+        this->close();
     }
     else {
         result += QString::fromUtf8("Commande inconnue");
     }
 
     return result;
+}
+
+void Window::close() {
+    std::cout << "Closing..." << endl;
+    // TODO close socket
+    exit(0);
 }
