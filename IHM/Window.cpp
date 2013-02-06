@@ -1,7 +1,9 @@
 #include "Window.hpp"
 
-Window::Window(QWidget *parent) : QMainWindow(parent)
+Window::Window(QWidget *parent, int serverSocket) : QMainWindow(parent)
 {
+    this->serverSocket = serverSocket;
+
     //this->resize(APP_WIDTH, APP_HEIGHT);
     this->setFixedSize(APP_WIDTH, APP_HEIGHT);
 

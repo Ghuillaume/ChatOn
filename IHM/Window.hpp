@@ -30,13 +30,15 @@ class Window : public QMainWindow
     Q_OBJECT
     
 	public:
-		explicit Window(QWidget *parent = 0);
+        explicit Window(QWidget *parent = 0, int serverSocket = 0);
 		~Window();
 
         void addConnected(string name);
         void removeConnected(string name);
 
 	private:
+        int serverSocket;
+
 		QWidget *centralWidget;
 		
 		QMenuBar* menubar;
