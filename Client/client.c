@@ -48,7 +48,7 @@ void readFromServ(void* arg) {
 		else if(strncmp(buffIn, "connected:", 10) == 0)
 		{
 			char liste_connectes[TAILLE_MAX];
-			copier_donnees(liste_connectes, buffIn, 10, strlen(buffIn)-10);
+			copier_chaine(liste_connectes, buffIn, 10, strlen(buffIn)-10);
 			// Affichage de la liste des connectés
 			printf("Liste des connectés :\n"); 
 			char* pseudo_connecte = strtok(liste_connectes, DELIM_PV);

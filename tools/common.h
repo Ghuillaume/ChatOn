@@ -1,21 +1,8 @@
-int copier_donnees(char *dest, const char *src, int debut, int longueur)
-{	
-	int i = debut;
-	int j = 0;
-	while ( (src[i] != ';') && (src[i] != '\0') && (j < longueur) )
-	{
-		dest[j] = src[i];
-		i++;
-		j++;
-	}
-	
-	/* On s'arrête au prochain symbole ";" dans la chaine source */
-	for(; src[i] != ';'; i++);
-	dest[j] = '\0';
-	
-	/*
-	On retourne l'indice courant de la chaine afin de pouvoir la retraiter
-	sans repartir du début.
-	*/
-	return i;
-}
+/* Fonctions communément appelées par les clients / serveurs */
+#define DELIM_ESPACE " "
+
+// Copier une sous-chaine de caractères
+int copier_chaine(char *dest, const char *src, int debut, int longueur);
+
+// Séparer une phrase en 2 parties au Nième symbole espace
+void separer_phrase(char *partie1, char *partie2, char *src, int occurence);
