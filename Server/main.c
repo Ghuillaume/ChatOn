@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <linux/types.h>
@@ -6,9 +7,10 @@
 #include <string.h>
 #include <pthread.h>
 #include <sys/time.h>
+#include <strings.h>
 
-#include "file.h"
-#include "types.h"
+#include "../tools/file.h"
+#include "../tools/types.h"
 #include "../tools/common.h"
 
 #define	h_addr h_addr_list[0]
@@ -67,30 +69,31 @@ void traiter_requete(void *arg) {
 	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
 
 	// On remplit les différents champs
-	int indice = copier_donnees(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
-	copier_donnees(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
+	int indice = copier_chaine(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
+	copier_chaine(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
 	struct timeval tv;
 	gettimeofday(&tv,NULL);
 	nouvel_utilisateur->dernier_contact = tv.tv_sec;
 	
 	// Alimente le tableau de gens connectés
 	int ajoute = 0;
-	int i = 0;
-	while (!ajoute && i < NB_SLOTS_SERVEUR)
+	int indice_tab_connectes = 0;
+	while (!ajoute && indice_tab_connectes < NB_SLOTS_SERVEUR)
 	{
-		if(liste_connectes[i] == NULL)
+		if(liste_connectes[indice_tab_connectes] == NULL)
 		{
-			liste_connectes[i] = nouvel_utilisateur;
+			liste_connectes[indice_tab_connectes] = nouvel_utilisateur;
 			ajoute = 1;
 		}
 		else
 		{
-			i++;
+			indice_tab_connectes++;
 		}
 	}
 	
 	// Envoie la liste des pseudos des gens connectés
 	char pseudos_connectes[156] = "connected:";
+	int i;
 	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
 	{
 		if (liste_connectes[i] != NULL)
@@ -127,14 +130,45 @@ void traiter_requete(void *arg) {
 		
 		printf("%s : \"%s\"\n", nouvel_utilisateur->pseudo, buffer);
 		
+		// On traite les messages en fonction des mots-clés (/quit, /msg, ...)
 		if (strncmp(buffer, "/quit", 4) == 0)
 		{
 			sortie = 1;
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
-			// TODO
-			printf("msg\n");
+			// On découpe les différentes parties de la chaine (commande, destinataire, message)
+			char commande[11];
+			char reste_commande[TAILLE_MAX];
+			char chaine_message[TAILLE_MAX];
+			separer_phrase(commande, reste_commande, buffer, 1);
+			char destinataire[LONGUEUR_MAX_PSEUDO];
+			separer_phrase(destinataire, chaine_message, reste_commande, 1);
+			
+			// On crée la structure message qui contient toutes les informations
+			message *msg = malloc(sizeof(message));
+			if (msg == NULL)
+			{
+				perror("malloc");
+				break;
+			}
+			strcpy(msg->source, nouvel_utilisateur->pseudo);
+			
+			// On ajoute le message dans la file
+			for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
+			{
+				if (liste_connectes[i] != NULL)
+				{
+					if(strcmp(liste_connectes[i]->pseudo,destinataire) == 0)
+					{
+						strcpy(msg->dest, liste_connectes[i]->pseudo);
+					}
+				}
+			}
+			
+			strcpy(msg->message, chaine_message);
+			
+			// TODO : ajouter message dans la file de message
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
 		{
@@ -147,7 +181,7 @@ void traiter_requete(void *arg) {
 		}
 		
 		memset(buffer, '\0', TAILLE_MAX);
-		if(!sortie)
+		if (!sortie)
 		{
 			longueur = read(sock, buffer, sizeof(buffer));
 		}
@@ -155,6 +189,7 @@ void traiter_requete(void *arg) {
 	
 	// Ferme le socket, libère le slot et termine le thread
 	printf("fin connexion\n");
+	liste_connectes[indice_tab_connectes] = NULL;
 	free(nouvel_utilisateur);
 	close(sock);
 	slots_serveurs_restants++;
@@ -174,11 +209,16 @@ int main(int argc, char** argv) {
 		return -1;
 	initialisation (suite);
 	
+	// Création de la liste des connectés sur le serveur et initialisation à NULL
 	liste_connectes = malloc(sizeof(utilisateur*) * NB_SLOTS_SERVEUR);
 	if(liste_connectes == NULL)
 	{
 		perror("malloc");
 		exit(1);
+	}
+	for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
+	{
+		liste_connectes[i] = NULL;
 	}
 	
 	int socket_descriptor, 			/* descripteur de socket */

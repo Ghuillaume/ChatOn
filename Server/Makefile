@@ -1,15 +1,19 @@
 CC = gcc
 LDFLAGS = -pthread -std=c99
+TOOLS = ../tools/
 
 .PHONY = clean
 
-server: main.o file.o
+server: main.o file.o common.o
 	$(CC) -o $@ $^ $(LDFLAGS)
 	
-main.o: main.c file.c
+common.o: $(TOOLS)common.c
+	$(CC) $(CFLAGS) -c $^ $(LDFLAGS)
+
+main.o: main.c $(TOOLS)file.c
 	$(CC) $(CFLAGS) -c $^ $(LDFLAGS)
 	
-file.o: file.c
+file.o: $(TOOLS)file.c
 	$(CC) $(CFLAGS) -c $^ $(LDFLAGS)
 	
 clean:
