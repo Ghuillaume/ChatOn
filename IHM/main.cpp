@@ -99,11 +99,11 @@ int main(int argc, char *argv[])
 
     // Thread d'écoute du serveur
     pthread_t readLoop;
-    if(pthread_create(&readLoop, NULL, readFromServ, (void*)(&socket_descriptor)) < 0)
+    /*if(pthread_create(&readLoop, NULL, readFromServ, (void*)(&socket_descriptor)) < 0)
     {
         perror("pthread_create");
         exit(1);
-    }
+    }*/
 
     QApplication a(argc, argv);
 

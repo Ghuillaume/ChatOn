@@ -61,7 +61,7 @@ Window::Window(QWidget *parent, int serverSocket) : QMainWindow(parent)
     sendButton->setText("Envoyer");
 
     QObject::connect(connectedPeople, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(newTab(QListWidgetItem*)));
-    QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(sendText()));
+    QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(textEntered()));
 
 }
 
@@ -94,7 +94,7 @@ void Window::newTab(QListWidgetItem* itemClicked) {
     string title = itemClicked->text().toStdString();
 
     // Création d'un nouvel onglet
-    PrivateTab* tab = new PrivateTab(tabWidget, tabWidget);
+    PrivateTab* tab = new PrivateTab(tabWidget, this);
     tab->setObjectName(QString::fromUtf8("tab"));
     tabWidget->addTab(tab, QString());
     tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", title.c_str(), 0, QApplication::UnicodeUTF8));
@@ -104,12 +104,55 @@ void Window::newTab(QListWidgetItem* itemClicked) {
 
 }
 
-void Window::sendText() {
+void Window::textEntered() {
     QString texte = this->inputText->toPlainText();
 
     if(!texte.isEmpty()) {
-        std::cout << "Send to all : " << texte.toStdString().c_str() << std::endl;
-        this->history->append("Moi : " + this->inputText->toPlainText());
         this->inputText->clear();
+
+        if(texte.startsWith('/')) {
+            this->history->append(this->commandProcessing(texte));
+        }
+        else {
+            this->history->append("Moi : " + this->inputText->toPlainText());
+            sendText(texte, "all");
+        }
     }
+}
+
+void Window::sendText(QString text, string dest) {
+
+    QString toSend = "";
+    if(dest == "all") {
+        toSend += "/all ";
+    }
+    else {
+        toSend += "/msg ";
+        toSend += dest.c_str();
+        toSend += " ";
+    }
+
+    toSend += text;
+
+    std::cout << "Sending : " << toSend.toStdString().c_str() << std::endl;
+    write(this->serverSocket,toSend.toStdString().c_str(),strlen(toSend.toStdString().c_str()));
+}
+
+
+QString Window::commandProcessing(QString text) {
+
+    QString result = "";
+
+    if(text == "/help") {
+        result += QString::fromUtf8("/help : afficher l'aide ; /quit : se déconnecter");
+    }
+    else if(text == "/quit") {
+        //close(serverSocket);
+        exit(1);
+    }
+    else {
+        result += QString::fromUtf8("Commande inconnue");
+    }
+
+    return result;
 }

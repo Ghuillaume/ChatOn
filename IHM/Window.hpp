@@ -36,6 +36,12 @@ class Window : public QMainWindow
         void addConnected(string name);
         void removeConnected(string name);
 
+        void sendText(QString text, string dest = "");
+        QString commandProcessing(QString text);
+
+
+        QTabWidget* tabWidget;
+
 	private:
         int serverSocket;
 
@@ -44,8 +50,7 @@ class Window : public QMainWindow
 		QMenuBar* menubar;
 		QMenu* fileMenu;
 		QAction* quitItem;
-		
-		QTabWidget* tabWidget;
+
 		QWidget* mainTab;
 
         QTextEdit* history;
@@ -56,7 +61,7 @@ class Window : public QMainWindow
 
     public slots:
         void newTab(QListWidgetItem *itemClicked);
-        void sendText();
+        void textEntered();
 };
 
 #endif // WINDOW_HPP

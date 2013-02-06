@@ -12,6 +12,9 @@
 #include <string>
 #include <iostream>
 
+class Window;
+#include "Window.hpp"
+
 using namespace std;
 
 
@@ -30,12 +33,12 @@ class PrivateTab : public QWidget
 {
     Q_OBJECT
     public:
-        explicit PrivateTab(QWidget *parent = 0, QTabWidget* tabWidget = NULL);
+        explicit PrivateTab(QWidget *parent = 0, Window* mainWindow = NULL);
 
         void setObjects();
 
     private:
-        QTabWidget* tabWidget;
+        Window* mainWindow;
 
         QTextEdit* history;
         QTextEdit* inputText;
@@ -45,7 +48,7 @@ class PrivateTab : public QWidget
     signals:
 
     public slots:
-        void sendText();
+        void textEntered();
     
 };
 

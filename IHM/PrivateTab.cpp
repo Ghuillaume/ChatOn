@@ -1,9 +1,9 @@
 #include "PrivateTab.hpp"
 
-PrivateTab::PrivateTab(QWidget *parent, QTabWidget* tabWidget) :
+PrivateTab::PrivateTab(QWidget *parent, Window *mainWindow) :
     QWidget(parent)
 {
-    this->tabWidget = tabWidget;
+    this->mainWindow = mainWindow;
 
 
 }
@@ -21,15 +21,21 @@ void PrivateTab::setObjects() {
     sendButton->setGeometry(QRect(SENDING_WIDTH + 2*MARGIN, HISTORY_HEIGHT + 2*MARGIN, BUTTON_WIDTH, SENDING_HEIGHT));
     sendButton->setText("Envoyer");
 
-    QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(sendText()));
+    QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(textEntered()));
 }
 
-void PrivateTab::sendText() {
+void PrivateTab::textEntered() {
     QString texte = this->inputText->toPlainText();
 
     if(!texte.isEmpty()) {
-        std::cout << "Send to " << this->tabWidget->tabText(tabWidget->indexOf(this)).toStdString().c_str() << " : " << this->inputText->toPlainText().toStdString().c_str() << std::endl;
-        this->history->append("Moi : " + this->inputText->toPlainText());
         this->inputText->clear();
+
+        if(texte.startsWith('/')) {
+            this->history->append(this->mainWindow->commandProcessing(texte));
+        }
+        else {
+            this->history->append("Moi : " + this->inputText->toPlainText());
+            this->mainWindow->sendText(texte, this->mainWindow->tabWidget->tabText(this->mainWindow->tabWidget->indexOf(this)).toStdString());
+        }
     }
 }
