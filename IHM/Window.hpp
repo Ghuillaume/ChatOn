@@ -33,7 +33,8 @@ class Window : public QMainWindow
 		explicit Window(QWidget *parent = 0);
 		~Window();
 
-        void newTab(string title);
+        void addConnected(string name);
+        void removeConnected(string name);
 
 	private:
 		QWidget *centralWidget;
@@ -51,7 +52,9 @@ class Window : public QMainWindow
         QLabel* nbPeople;
         QPushButton* sendButton;
 
-public slots:
+    public slots:
+        void newTab(QListWidgetItem *itemClicked);
+        void sendText();
 };
 
 #endif // WINDOW_HPP
