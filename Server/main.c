@@ -137,13 +137,16 @@ void traiter_requete(void *arg) {
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
+			printf("/msg\n");
 			// On découpe les différentes parties de la chaine (commande, destinataire, message)
 			char commande[11];
 			char reste_commande[TAILLE_MAX];
 			char chaine_message[TAILLE_MAX];
 			separer_phrase(commande, reste_commande, buffer, 1);
+			printf("séparation1\n");
 			char destinataire[LONGUEUR_MAX_PSEUDO];
 			separer_phrase(destinataire, chaine_message, reste_commande, 1);
+			printf("séparation2\n");
 			
 			// On crée la structure message qui contient toutes les informations
 			message *msg = malloc(sizeof(message));
@@ -152,7 +155,9 @@ void traiter_requete(void *arg) {
 				perror("malloc");
 				break;
 			}
+			printf("malloc ok\n");
 			strcpy(msg->source, nouvel_utilisateur->pseudo);
+			printf("source ok\n");
 			
 			// On ajoute le message dans la file
 			for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
@@ -165,8 +170,10 @@ void traiter_requete(void *arg) {
 					}
 				}
 			}
+			printf("dest ok\n");
 			
 			strcpy(msg->message, chaine_message);
+			printf("message ok\n");
 			
 			// TODO : ajouter message dans la file de message
 		}
