@@ -4,6 +4,8 @@ PrivateTab::PrivateTab(QWidget *parent, QTabWidget* tabWidget) :
     QWidget(parent)
 {
     this->tabWidget = tabWidget;
+
+
 }
 
 void PrivateTab::setObjects() {
@@ -23,6 +25,11 @@ void PrivateTab::setObjects() {
 }
 
 void PrivateTab::sendText() {
-    std::cout << "Send to " << this->tabWidget->tabText(tabWidget->indexOf(this)).toStdString().c_str() << " : " << this->inputText->toPlainText().toStdString().c_str() << std::endl;
-    this->inputText->clear();
+    QString texte = this->inputText->toPlainText();
+
+    if(!texte.isEmpty()) {
+        std::cout << "Send to " << this->tabWidget->tabText(tabWidget->indexOf(this)).toStdString().c_str() << " : " << this->inputText->toPlainText().toStdString().c_str() << std::endl;
+        this->history->append("Moi : " + this->inputText->toPlainText());
+        this->inputText->clear();
+    }
 }

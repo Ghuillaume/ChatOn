@@ -36,6 +36,7 @@ Window::Window(QWidget *parent) : QMainWindow(parent)
     mainTab->setObjectName(QString::fromUtf8("tab"));
     tabWidget->addTab(mainTab, QString());
     tabWidget->setTabText(tabWidget->indexOf(mainTab), QApplication::translate("MainWindow", "Salon principal", 0, QApplication::UnicodeUTF8));
+    tabWidget->setTabsClosable(true);
 
     // Onglet principal : salon général
     history = new QTextEdit(mainTab);
@@ -57,7 +58,8 @@ Window::Window(QWidget *parent) : QMainWindow(parent)
     sendButton->setGeometry(QRect(SENDING_WIDTH + 2*MARGIN, HISTORY_HEIGHT + 2*MARGIN, BUTTON_WIDTH, SENDING_HEIGHT));
     sendButton->setText("Envoyer");
 
-    newTab("lol");
+    QObject::connect(connectedPeople, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(newTab(QListWidgetItem*)));
+    QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(sendText()));
 
 }
 
@@ -66,7 +68,28 @@ Window::~Window()
 
 }
 
-void Window::newTab(string title) {
+void Window::addConnected(string name) {
+    this->connectedPeople->insertItem(this->connectedPeople->count(), QString::fromUtf8(name.c_str()));
+
+    QString nb = QString::number(this->connectedPeople->count());
+    nb += QString::fromUtf8(" personnes connectées");
+    this->nbPeople->setText(nb);
+}
+
+void Window::removeConnected(string name) {
+    for(int i = 0 ; i < this->connectedPeople->count() ; i++) {
+        if(this->connectedPeople->item(i)->text().toStdString() == name)
+            this->connectedPeople->takeItem(i);
+    }
+
+    QString nb = QString::number(this->connectedPeople->count());
+    nb += QString::fromUtf8(" personnes connectées");
+    this->nbPeople->setText(nb);
+}
+
+void Window::newTab(QListWidgetItem* itemClicked) {
+
+    string title = itemClicked->text().toStdString();
 
     // Création d'un nouvel onglet
     PrivateTab* tab = new PrivateTab(tabWidget, tabWidget);
@@ -75,4 +98,16 @@ void Window::newTab(string title) {
     tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", title.c_str(), 0, QApplication::UnicodeUTF8));
     tab->setObjects();
 
+    this->tabWidget->setCurrentWidget(tab);
+
+}
+
+void Window::sendText() {
+    QString texte = this->inputText->toPlainText();
+
+    if(!texte.isEmpty()) {
+        std::cout << "Send to all : " << texte.toStdString().c_str() << std::endl;
+        this->history->append("Moi : " + this->inputText->toPlainText());
+        this->inputText->clear();
+    }
 }
