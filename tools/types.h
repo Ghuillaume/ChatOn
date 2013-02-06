@@ -11,7 +11,7 @@ typedef struct utilisateur {
 } utilisateur;
 
 typedef struct message {
-	utilisateur source;
-	utilisateur dest;
+	char *source;
+	char *dest;
 	char message[LONGUEUR_MAX_MSG + 1];
 } message;

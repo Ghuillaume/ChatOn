@@ -1,4 +1,6 @@
 /* Fonctions communément appelées par les clients / serveurs */
+#include <string.h>
+
 #define DELIM_ESPACE " "
 
 // Copier une sous-chaine de caractères
