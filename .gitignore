@@ -1,5 +1,7 @@
 *.o
 *~
+moc_*
 
 server
 client
+IHM
