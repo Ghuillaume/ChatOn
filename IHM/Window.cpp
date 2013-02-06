@@ -165,6 +165,8 @@ QString Window::commandProcessing(QString text) {
 
 void Window::close() {
     std::cout << "Closing..." << endl;
+
+    write(this->serverSocket, "/quit", 6);
     // TODO close socket
     exit(0);
 }

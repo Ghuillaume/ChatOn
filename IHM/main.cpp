@@ -20,6 +20,12 @@ typedef struct sockaddr_in sockaddr_in;
 typedef struct hostent hostent;
 typedef struct servent servent;
 
+struct args {
+    int socket;
+    Window* window;
+};
+typedef struct args args;
+
 // Reader thread code
 void readFromServ(void* arg);
 
@@ -38,7 +44,6 @@ int main(int argc, char *argv[])
     char* host;									// nom de la machine distante
     char* pseudo;
     char* ip;
-    char msg[TAILLE_MAX] = "";
 
 
 
@@ -92,85 +97,87 @@ int main(int argc, char *argv[])
     }
 
     // Envoi des informations de connexion au serveur
+    char msg[TAILLE_MAX] = "";
+    strcat(msg, pseudo);
+    strcat(msg, ";");
+    strcat(msg, ip);
+    std::cout << "Send to server : " << msg << endl;
     if ((write(socket_descriptor, msg, strlen(msg))) < 0) {
         printf("erreur : impossible d'ecrire le message destine au serveur.\n");
         exit(1);
     }
 
-    // Thread d'écoute du serveur
-    pthread_t readLoop;
-    /*if(pthread_create(&readLoop, NULL, readFromServ, (void*)(&socket_descriptor)) < 0)
-    {
-        perror("pthread_create");
-        exit(1);
-    }*/
-
     QApplication a(argc, argv);
 
     Window w(0, socket_descriptor, pseudo);
-    w.show();
 
-    w.addConnected("machin");
-    w.addConnected("truc");
-    w.addConnected("bidule");
-    w.addConnected("chouette");
-    w.removeConnected("truc");
+    // Thread d'écoute du serveur
+    pthread_t readLoop;
+    args args;
+    args.socket = socket_descriptor;
+    args.window = &w;
+    if(pthread_create(&readLoop, NULL, readFromServ, (void *)(&args)) < 0)
+    {
+        perror("pthread_create");
+        exit(1);
+    }
+
+
+    w.show();
 
     return a.exec();
 }
 
 
 void readFromServ(void* arg) {
+    printf("Ready to read\n");
     int sortie = 0;
-    int* tmp = (int*)arg;
-    int socket = *tmp;
+    args* tmp = (args*)arg;
+    int socket = tmp->socket;
+    Window* w = tmp->window;
+
+    w->addConnected("machin");
+    w->addConnected("truc");
+    w->addConnected("bidule");
+    w->addConnected("chouette");
+    w->removeConnected("truc");
 
     char buffIn[TAILLE_MAX];
 
-    memset(buffIn, '\0', TAILLE_MAX);
-        int longueur = read(socket, buffIn, sizeof(buffIn));
+    int longueur;
 
-        while(!sortie)
+    while(longueur = read(socket, buffIn, sizeof(buffIn)) && !sortie)
+    {
+        if(longueur <= 0)
         {
-            if(longueur <= 0)
-            {
-                perror("read");
-                exit(1);
-            }
-
-            // Protocole de lecture
-            printf("message:%s\n", buffIn);
-            if(strncmp(buffIn, "close:", 6) == 0)
-            {
-                printf("Fin de connexion par le serveur, extinction.\n");
-                return;
-            }
-            else if(strncmp(buffIn, "connected:", 10) == 0)
-            {
-                char liste_connectes[TAILLE_MAX];
-                copier_chaine(liste_connectes, buffIn, 10, strlen(buffIn)-10);
-                // Affichage de la liste des connectés
-                printf("Liste des connectés :\n");
-                char* pseudo_connecte = strtok(liste_connectes, DELIM_PV);
-                while(pseudo_connecte != NULL)
-                {
-                    fprintf(stdout, "| %s |", pseudo_connecte);
-                    pseudo_connecte = strtok(NULL, DELIM_PV);
-                }
-                printf("\n");
-            }
-            else if(strncmp(buffIn, "welcome:", 8) == 0)
-            {
-                // Affichage du message de bienvenue
-            }
-            else
-            {
-                // TODO
-            }
-
-            memset(buffIn, '\0', TAILLE_MAX);
-            longueur = read(socket, buffIn, sizeof(buffIn));
+            perror("read error");
+            exit(1);
         }
+
+        // Protocole de lecture
+        printf("message:%s\n", buffIn);
+        if(strncmp(buffIn, "close:", 6) == 0)
+        {
+            printf("Fin de connexion par le serveur, extinction.\n");
+            return;
+        }
+        else if(strncmp(buffIn, "connected:", 10) == 0)
+        {
+            char pseudo[TAILLE_MAX];
+            copier_chaine(pseudo, buffIn, 10, strlen(buffIn));
+            w->addConnected(pseudo);
+        }
+        else if(strncmp(buffIn, "welcome:", 8) == 0)
+        {
+            // Affichage du message de bienvenue
+        }
+        else
+        {
+            // TODO
+        }
+
+        memset(buffIn, '\0', TAILLE_MAX);
+    }
 
     return;
 

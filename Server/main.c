@@ -27,185 +27,12 @@ int slots_serveurs_restants = NB_SLOTS_SERVEUR;
 utilisateur** liste_connectes;
 
 
-/***********************************************************/
-/* Code du thread correspondant au traitement d'un client  */
-/***********************************************************/
-void traiter_requete(void *arg) {
-	int* tmp = (int*)arg;
-	int sock = *tmp;
+// Thread de communication avec le client
+void clientProtocol(void* arg);
 
-	// Réception de la requête
-	char buffer[TAILLE_MAX];
-	int longueur = read(sock, buffer, sizeof(buffer));
-	printf("longueur du texte reçu : %d\n", longueur);
-	
-	if(longueur < 0)
-	{
-		perror("read");
-		return;
-	}
-	
-	buffer[longueur] = '\0';
-	
-	// Décrémente le nombre de slots disponibles sur le serveur
-	if (slots_serveurs_restants == 0)
-	{
-		printf("Pas d'espace disponible pour les nouveaux utilisateurs.\n");
-		return;
-	}
-	else
-	{
-		slots_serveurs_restants--;
-	}
-	
-	// Contruit dynamiquement une structure de données utilisateur 
-	utilisateur *nouvel_utilisateur = malloc(sizeof(utilisateur));
-	if(nouvel_utilisateur == NULL)
-	{
-		perror("malloc");
-		return;
-	}
-	nouvel_utilisateur->pseudo[LONGUEUR_MAX_PSEUDO] = '\0';
-	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
+utilisateur* initConnection(int socket);
 
-	// On remplit les différents champs
-	int indice = copier_chaine(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
-	copier_chaine(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
-	struct timeval tv;
-	gettimeofday(&tv,NULL);
-	nouvel_utilisateur->dernier_contact = tv.tv_sec;
-	
-	// Alimente le tableau de gens connectés
-	int ajoute = 0;
-	int indice_tab_connectes = 0;
-	while (!ajoute && indice_tab_connectes < NB_SLOTS_SERVEUR)
-	{
-		if(liste_connectes[indice_tab_connectes] == NULL)
-		{
-			liste_connectes[indice_tab_connectes] = nouvel_utilisateur;
-			ajoute = 1;
-		}
-		else
-		{
-			indice_tab_connectes++;
-		}
-	}
-	
-	// Envoie la liste des pseudos des gens connectés
-	char pseudos_connectes[156] = "connected:";
-	int i;
-	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
-	{
-		if (liste_connectes[i] != NULL)
-		{
-			char pseudo_courant[LONGUEUR_MAX_PSEUDO+1] = "";
-			strcpy(pseudo_courant, liste_connectes[i]->pseudo);
-			strcat(pseudos_connectes, strcat(pseudo_courant, ";"));
-		}
-	}
-	
-	printf("pseudos connectés : %s\n", pseudos_connectes);
-	memset(buffer, '\0', TAILLE_MAX);
-	strcpy(buffer, pseudos_connectes);
-	write(sock, buffer, strlen(buffer));
-	
-	memset(buffer, '\0', TAILLE_MAX);
-	longueur = read(sock, buffer, sizeof(buffer));
-	
-	// TODO : Ecouter en boucle les requêtes du client et les traiter
-	int sortie = 0; 
-	while (!sortie)
-	{
-		if(longueur <= 0)
-		{
-			perror("read");
-			return;
-		}
 
-		// On remplace le dernier caractère \n par \0 pour simplifier l'affichage
-		if(strlen(buffer) > 1)
-		{
-			buffer[strlen(buffer)-1] = '\0';		
-		}
-		
-		printf("%s : \"%s\"\n", nouvel_utilisateur->pseudo, buffer);
-		
-		// On traite les messages en fonction des mots-clés (/quit, /msg, ...)
-		if (strncmp(buffer, "/quit", 4) == 0)
-		{
-			sortie = 1;
-		}
-		else if (strncmp(buffer, "/msg", 4) == 0)
-		{
-			printf("/msg\n");
-			// On découpe les différentes parties de la chaine (commande, destinataire, message)
-			char commande[11];
-			char reste_commande[TAILLE_MAX];
-			char chaine_message[TAILLE_MAX];
-			separer_phrase(commande, reste_commande, buffer, 1);
-			printf("séparation1\n");
-			char destinataire[LONGUEUR_MAX_PSEUDO];
-			separer_phrase(destinataire, chaine_message, reste_commande, 1);
-			printf("séparation2\n");
-			
-			// On crée la structure message qui contient toutes les informations
-			message *msg = malloc(sizeof(message));
-			if (msg == NULL)
-			{
-				perror("malloc");
-				break;
-			}
-			printf("malloc ok\n");
-			strcpy(msg->source, nouvel_utilisateur->pseudo);
-			printf("source ok\n");
-			
-			// On ajoute le message dans la file
-			for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
-			{
-				if (liste_connectes[i] != NULL)
-				{
-					if(strcmp(liste_connectes[i]->pseudo,destinataire) == 0)
-					{
-						strcpy(msg->dest, liste_connectes[i]->pseudo);
-					}
-				}
-			}
-			printf("dest ok\n");
-			
-			strcpy(msg->message, chaine_message);
-			printf("message ok\n");
-			
-			// TODO : ajouter message dans la file de message
-		}
-		else if (strncmp(buffer, "/all", 4) == 0)
-		{
-			// TODO
-			printf("all\n");
-		}
-		else
-		{
-			printf("Commande non reconnue.\n");
-		}
-		
-		memset(buffer, '\0', TAILLE_MAX);
-		if (!sortie)
-		{
-			longueur = read(sock, buffer, sizeof(buffer));
-		}
-	}
-	
-	// Ferme le socket, libère le slot et termine le thread
-	printf("fin connexion\n");
-	liste_connectes[indice_tab_connectes] = NULL;
-	free(nouvel_utilisateur);
-	close(sock);
-	slots_serveurs_restants++;
-	return;
-}
-
-/*---------------------------------------*/
-
-/*---------------------------------------*/
 int main(int argc, char** argv) {
 	
 	File *suite;
@@ -280,12 +107,20 @@ int main(int argc, char** argv) {
 	while(1) {
 		longueur_adresse_courante = sizeof(adresse_client_courant);
 		/* adresse_client_courant sera renseignée par accept via les infos du connect */
-		if((nouv_socket_descriptor = accept(socket_descriptor, (sockaddr*)(&adresse_client_courant), &longueur_adresse_courante)) < 0) {
+		if((nouv_socket_descriptor = accept(socket_descriptor, (sockaddr_in*)(&adresse_client_courant), &longueur_adresse_courante)) < 0) {
 			perror("erreur : impossible d'accepter la connexion avec le client.");
 			exit(1);
 		}
 		
-		if(pthread_create(&clientHandler, NULL, traiter_requete, (void*)&nouv_socket_descriptor) < 0) {
+		
+		clientThreadArgs args;
+		args.socket = nouv_socket_descriptor;
+		args.user = initConnection(nouv_socket_descriptor);
+		
+		if(args.user == NULL) {
+			exit(1);
+		}
+		if(pthread_create(&clientHandler, NULL, clientProtocol, (void*)&args) < 0) {
 			perror("Thread problem\n");
 			exit(1);
 		}
@@ -294,4 +129,178 @@ int main(int argc, char** argv) {
 	free(liste_connectes);
 	
 	return EXIT_SUCCESS;
+}
+
+
+utilisateur* initConnection(int socket) {
+
+	char buffer[TAILLE_MAX];
+	
+	// Attente des informations de connexion du client (pseudo, ip)
+	int longueur;
+	longueur = read(socket, buffer, sizeof(buffer));
+	
+	printf("Receiving connection information from client : %s\n", buffer);
+	
+	// Décrémente le nombre de slots disponibles sur le serveur
+	if (slots_serveurs_restants == 0)
+	{
+		printf("Pas d'espace disponible pour les nouveaux utilisateurs.\n");
+		return NULL;
+	}
+	else
+	{
+		slots_serveurs_restants--;
+	}
+	
+	// Contruit dynamiquement une structure de données utilisateur 
+	utilisateur *nouvel_utilisateur = malloc(sizeof(utilisateur));
+	if(nouvel_utilisateur == NULL)
+	{
+		perror("malloc");
+		return NULL;
+	}
+	nouvel_utilisateur->pseudo[LONGUEUR_MAX_PSEUDO] = '\0';
+	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
+
+	// On remplit les différents champs
+	int indice = copier_chaine(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
+	copier_chaine(nouvel_utilisateur->ip, buffer, indice + 1, LONGUEUR_MAX_IP);
+	struct timeval tv;
+	gettimeofday(&tv,NULL);
+	nouvel_utilisateur->dernier_contact = tv.tv_sec;
+	
+	// Alimente le tableau de gens connectés
+	int ajoute = 0;
+	int indice_tab_connectes = 0;
+	while (!ajoute && indice_tab_connectes < NB_SLOTS_SERVEUR)
+	{
+		if(liste_connectes[indice_tab_connectes] == NULL)
+		{
+			liste_connectes[indice_tab_connectes] = nouvel_utilisateur;
+			ajoute = 1;
+		}
+		else
+		{
+			indice_tab_connectes++;
+		}
+	}
+	
+	// TODO : envoyer à tous les clients l'information de la connexion du nouvel utilisateur : "connected:nouvel_utilisateur->pseudo"
+	
+	
+	// Envoie la liste des pseudos des gens connectés au nouvel utilisateur
+	int i;
+	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
+	{
+		if (liste_connectes[i] != NULL && liste_connectes[i]->pseudo != nouvel_utilisateur->pseudo)
+		{
+			strcpy(buffer,"connected:");
+			strcat(buffer, liste_connectes[i]->pseudo);
+			write(socket, buffer, strlen(buffer));
+			memset(buffer, '\0', TAILLE_MAX);
+		}
+	}
+	
+	printf("Client initialized !!\n");
+	
+	return nouvel_utilisateur;
+	
+}
+
+
+void clientProtocol(void* arg) {
+
+    clientThreadArgs* tmp = (clientThreadArgs*)arg;
+    int socket = tmp->socket;
+    utilisateur* currentUser = tmp->user;
+	
+	char buffer[TAILLE_MAX];
+	int longueur;
+	
+	int clientConnected = 0;
+	while(longueur = read(socket, buffer, sizeof(buffer)) && clientConnected) {
+
+		if(longueur <= 0)
+		{
+			perror("read");
+			return;
+		}
+	
+		printf("Socket from %s received : %s\n", currentUser->pseudo, buffer);
+	
+		// On traite les messages en fonction des mots-clés (/quit, /msg, ...)
+		if (strncmp(buffer, "/quit", 4) == 0)
+		{
+			printf("%s disconnected\n", currentUser->pseudo);
+			clientConnected = 1;
+		}
+		else if (strncmp(buffer, "/msg", 4) == 0)
+		{
+			printf("/msg\n");
+			// On découpe les différentes parties de la chaine (commande, destinataire, message)
+			char commande[11];
+			char reste_commande[TAILLE_MAX];
+			char chaine_message[TAILLE_MAX];
+			separer_phrase(commande, reste_commande, buffer, 1);
+			printf("séparation1\n");
+			char destinataire[LONGUEUR_MAX_PSEUDO];
+			separer_phrase(destinataire, chaine_message, reste_commande, 1);
+			printf("séparation2\n");
+		
+			// On crée la structure message qui contient toutes les informations
+			message *msg = malloc(sizeof(message));
+			if (msg == NULL)
+			{
+				perror("malloc error");
+				return; // ignorer le message
+			}
+			printf("malloc ok\n");
+			strcpy(msg->source, currentUser->pseudo);
+			printf("source ok\n");
+		
+			// On ajoute le message dans la file
+			for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
+			{
+				if (liste_connectes[i] != NULL)
+				{
+					if(strcmp(liste_connectes[i]->pseudo,destinataire) == 0)
+					{
+						strcpy(msg->dest, liste_connectes[i]->pseudo);
+					}
+				}
+			}
+			printf("dest ok\n");
+		
+			strcpy(msg->message, chaine_message);
+			printf("message ok\n");
+		
+			// TODO : ajouter message dans la file de message
+		}
+		else if (strncmp(buffer, "/all", 4) == 0)
+		{
+			// TODO
+		
+		}
+		else
+		{
+			printf("Commande non reconnue.\n");
+		}
+	
+		memset(buffer, '\0', TAILLE_MAX);
+	}
+	
+	// Ferme le socket, libère le slot et termine le thread
+	int i;
+	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
+	{
+		if (liste_connectes[i]->pseudo == currentUser->pseudo)
+		{
+			liste_connectes[i] = NULL;
+		}
+	}
+	free(currentUser);
+	close(socket);
+	slots_serveurs_restants++;
+	return;
 }
