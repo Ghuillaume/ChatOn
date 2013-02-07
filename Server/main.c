@@ -197,6 +197,7 @@ utilisateur* initConnection(int socket) {
 		{
 			strcpy(buffer,"connected:");
 			strcat(buffer, liste_connectes[i]->pseudo);
+			strcat(buffer, "\0");
 			write(socket, buffer, strlen(buffer));
 			memset(buffer, '\0', TAILLE_MAX);
 		}
@@ -218,7 +219,10 @@ void clientProtocol(void* arg) {
 	char buffer[TAILLE_MAX];
 	int longueur;
 	
-	int clientConnected = 0;
+	
+	printf("Thread %s initialized\n", currentUser);
+	
+	int clientConnected = 1;
 	while(longueur = read(socket, buffer, sizeof(buffer)) && clientConnected) {
 
 		if(longueur <= 0)
@@ -233,20 +237,17 @@ void clientProtocol(void* arg) {
 		if (strncmp(buffer, "/quit", 4) == 0)
 		{
 			printf("%s disconnected\n", currentUser->pseudo);
-			clientConnected = 1;
+			clientConnected = 0;
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
-			printf("/msg\n");
 			// On découpe les différentes parties de la chaine (commande, destinataire, message)
 			char commande[11];
 			char reste_commande[TAILLE_MAX];
 			char chaine_message[TAILLE_MAX];
 			separer_phrase(commande, reste_commande, buffer, 1);
-			printf("séparation1\n");
 			char destinataire[LONGUEUR_MAX_PSEUDO];
 			separer_phrase(destinataire, chaine_message, reste_commande, 1);
-			printf("séparation2\n");
 		
 			// On crée la structure message qui contient toutes les informations
 			message *msg = malloc(sizeof(message));
@@ -255,11 +256,9 @@ void clientProtocol(void* arg) {
 				perror("malloc error");
 				return; // ignorer le message
 			}
-			printf("malloc ok\n");
 			strcpy(msg->source, currentUser->pseudo);
-			printf("source ok\n");
 		
-			// On ajoute le message dans la file
+			// On crée le message et on le remplit
 			for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
 			{
 				if (liste_connectes[i] != NULL)
@@ -270,10 +269,8 @@ void clientProtocol(void* arg) {
 					}
 				}
 			}
-			printf("dest ok\n");
 		
 			strcpy(msg->message, chaine_message);
-			printf("message ok\n");
 		
 			// TODO : ajouter message dans la file de message
 		}

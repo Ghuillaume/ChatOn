@@ -98,6 +98,7 @@ void Window::removeConnected(string name) {
 
 void Window::newTab(QListWidgetItem* itemClicked) {
 
+	//while(true) {
     string title = itemClicked->text().toStdString();
 
     // Création d'un nouvel onglet
@@ -108,6 +109,7 @@ void Window::newTab(QListWidgetItem* itemClicked) {
     tab->setObjects();
 
     this->tabWidget->setCurrentWidget(tab);
+    //}
 
 }
 

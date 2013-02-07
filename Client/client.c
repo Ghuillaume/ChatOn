@@ -143,13 +143,13 @@ int main(int argc, char** argv) {
 		printf("L'adresse IP est malformée");
 	}
 	
-	/* DEBUG ONLY :  affichage du message */
-	/* TODO : à enlever */
+	
 	memset(msg, '\0', TAILLE_MAX);
-	strcat(msg, strcat(pseudo, ";"));
-	strcat(msg, strcat(ip, ";"));
+	strcat(msg, pseudo);
+	strcat(msg, ";")
+	strcat(msg, ip);
+	strcat(msg, ";");
 	printf("msg : %s\n", msg);
-	/* END DEBUG ONLY */
 	
 	/* Préparation des informations de connexion */
 	if ((ptr_host = gethostbyname(host)) == NULL) {

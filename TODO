@@ -1,0 +1,15 @@
+
+	Serveur :
+		- envoi des personnes connectées : soucis de chaine
+		- traiter /all msg
+		- ajouter msg à la file de message (pour /all et /msg)
+		- boucler de scrutation de la file de message pour chaque thread et envoie des messages
+		- Connexion d'un client -> notification à tous les autres clients (dans fonction initConnection)
+		- idem deconnexion
+		- timeout
+		
+	Client :
+		- Traitement de réception de message
+		- Traitement de notification de déconnexion
+		- popup de départ pour choisir IP du serveur & pseudo
+		- fermeture des onglets

@@ -167,6 +167,12 @@ void readFromServ(void* arg) {
             copier_chaine(pseudo, buffIn, 10, strlen(buffIn));
             w->addConnected(pseudo);
         }
+        else if(strncmp(buffIn, "disconnected:", 13) == 0)
+        {
+            char pseudo[TAILLE_MAX];
+            copier_chaine(pseudo, buffIn, 13, strlen(buffIn));
+            w->removeConnected(pseudo);
+        }
         else if(strncmp(buffIn, "welcome:", 8) == 0)
         {
             // Affichage du message de bienvenue
