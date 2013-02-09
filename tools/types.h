@@ -1,3 +1,6 @@
+#ifndef TYPES_H
+#define TYPES_H
+
 #define LONGUEUR_MAX_PSEUDO 30
 #define LONGUEUR_MAX_IP 15
 #define LONGUEUR_MAX_MSG 500
@@ -20,3 +23,5 @@ typedef struct clientThreadArgs {
     int socket;
     utilisateur* user;
 } clientThreadArgs;
+
+#endif

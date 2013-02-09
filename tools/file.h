@@ -1,8 +1,10 @@
 #include<stdlib.h>
 #include<string.h>
 
+#include "types.h"
+
 typedef struct ElementListe{
-  char *donnee;
+  message *msg;
   struct ElementListe *suivant;
 } Element;
 
@@ -15,13 +17,11 @@ typedef struct ListeRepere{
 /* initialisation */
 void initialisation (File * suite);
 
-
-
 /* ENFILER*/
-int ajouter_file (File * suite, Element * courant, char *donnee);
+int ajouter_file (File * suite, Element * courant, message *msg);
 
 /* DE_FILER*/
-char* retirer_file (File * suite);
+message* retirer_file (File * suite);
 
 /* FirstInFirstOut */
-#define file_donnee(suite) suite->debut->donnee
+#define file_message(suite) suite->debut->msg

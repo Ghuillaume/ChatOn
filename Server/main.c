@@ -25,6 +25,9 @@ typedef struct servent servent;
 /* Variables globales */
 int slots_serveurs_restants = NB_SLOTS_SERVEUR;
 utilisateur** liste_connectes;
+File *file_message;
+Element *element_courant;
+
 
 
 // Thread de communication avec le client
@@ -34,14 +37,12 @@ utilisateur* initConnection(int socket);
 
 
 int main(int argc, char** argv) {
-	
-	File *suite;
-	char *nom;
-	if ((suite = (File *) malloc (sizeof (File))) == NULL)
+	if ((file_message = (File *) malloc (sizeof (File))) == NULL)
 		return -1;
-	if ((nom = (char *) malloc (50 * sizeof (char))) == NULL)
+	if ((element_courant = (Element *) malloc (sizeof (Element))) == NULL)
 		return -1;
-	initialisation (suite);
+		
+	initialisation (file_message);
 	
 	// Création de la liste des connectés sur le serveur et initialisation à NULL
 	liste_connectes = malloc(sizeof(utilisateur*) * NB_SLOTS_SERVEUR);
@@ -271,8 +272,9 @@ void clientProtocol(void* arg) {
 			}
 		
 			strcpy(msg->message, chaine_message);
-		
-			// TODO : ajouter message dans la file de message
+			
+			ajouter_file(file_message, element_courant, msg);
+			
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
 		{
