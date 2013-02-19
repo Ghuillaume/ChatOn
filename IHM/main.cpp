@@ -1,5 +1,6 @@
 #include <QtGui/QApplication>
 #include "Window.hpp"
+#include "ConnexionDialog.hpp"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -45,6 +46,11 @@ int main(int argc, char *argv[])
     char* pseudo;
     char* ip;
 
+
+
+    QApplication a(argc, argv);
+	ConnexionDialog c(0);
+	c.exec();
 
 
     // Vérification des arguments
@@ -106,8 +112,6 @@ int main(int argc, char *argv[])
         printf("erreur : impossible d'ecrire le message destine au serveur.\n");
         exit(1);
     }
-
-    QApplication a(argc, argv);
 
     Window w(0, socket_descriptor, pseudo);
 
