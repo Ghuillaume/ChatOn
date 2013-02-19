@@ -45,28 +45,24 @@ int main(int argc, char *argv[])
     char* host;									// nom de la machine distante
     char* pseudo;
     char* ip;
+    int port;
 
 
 
     QApplication a(argc, argv);
-	ConnexionDialog c(0);
-	c.exec();
+	ConnexionDialog dialog(0);
+	dialog.exec();
+	
+	if(dialog.result() != QDialog::Accepted) {
+		return 0;
+	}
+	
 
-
-    // Vérification des arguments
-    /*if(argc != 4) {
-        printf("usage : client <adresse-serveur> <pseudo> <votre ip>\n");
-        exit(1);
-    }
-
-    prog = argv[0];
-    host = argv[1];
-    pseudo = argv[2];
-    ip = argv[3];*/
-
+    //host = dialog.serverEdit->text().toStdString().c_str();
     host = "localhost";
-    pseudo = "TempLogin";
+    pseudo = dialog.pseudoEdit->text().toStdString().c_str();
     ip = "localhost";
+    port = dialog.portEdit->text().toInt();
 
     if (strlen(pseudo) > 30)
     {
