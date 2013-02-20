@@ -64,6 +64,7 @@ class Window : public QMainWindow
         void newTab(QListWidgetItem *itemClicked);
         void textEntered();
         void close();
+        void closeEvent(QCloseEvent *event);
 };
 
 #endif // WINDOW_HPP

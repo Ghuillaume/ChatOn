@@ -5,7 +5,6 @@ Window::Window(QWidget *parent, int serverSocket, string pseudo) : QMainWindow(p
     this->serverSocket = serverSocket;
     this->pseudo = pseudo;
 
-    //this->resize(APP_WIDTH, APP_HEIGHT);
     this->setFixedSize(APP_WIDTH, APP_HEIGHT);
     QString title = "ChatOn - ";
     title += pseudo.c_str();
@@ -27,8 +26,6 @@ Window::Window(QWidget *parent, int serverSocket, string pseudo) : QMainWindow(p
         quitItem->setObjectName("quitItem");
         fileMenu->addAction(quitItem);
         quitItem->setText("Quitter");
-        QObject::connect(quitItem, SIGNAL(triggered()), this, SLOT(close()));
-        QObject::connect(this, SIGNAL(destroyed()), this, SLOT(close()));
         
 
     // Central widget
@@ -67,9 +64,12 @@ Window::Window(QWidget *parent, int serverSocket, string pseudo) : QMainWindow(p
     sendButton->setGeometry(QRect(SENDING_WIDTH + 2*MARGIN, HISTORY_HEIGHT + 2*MARGIN, BUTTON_WIDTH, SENDING_HEIGHT));
     sendButton->setText("Envoyer");
 
+
+
+    QObject::connect(quitItem, SIGNAL(triggered()), this, SLOT(close()));
+    QObject::connect(this, SIGNAL(destroyed()), this, SLOT(close()));
     QObject::connect(connectedPeople, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(newTab(QListWidgetItem*)));
     QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(textEntered()));
-
 }
 
 Window::~Window()
@@ -171,4 +171,9 @@ void Window::close() {
     write(this->serverSocket, "/quit", 6);
     // TODO close socket
     exit(0);
+}
+
+void Window::closeEvent(QCloseEvent *event)
+{
+    this->close();
 }

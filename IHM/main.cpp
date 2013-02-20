@@ -48,19 +48,18 @@ int main(int argc, char *argv[])
     int port;
 
 
-
     QApplication a(argc, argv);
 	ConnexionDialog dialog(0);
 	dialog.exec();
 	
 	if(dialog.result() != QDialog::Accepted) {
 		return 0;
-	}
-	
+    }
 
-    //host = dialog.serverEdit->text().toStdString().c_str();
-    host = "localhost";
-    pseudo = dialog.pseudoEdit->text().toStdString().c_str();
+    QByteArray temp = dialog.serverEdit->text().toLocal8Bit();
+    host = temp.data();
+    temp = dialog.pseudoEdit->text().toLocal8Bit();
+    pseudo = temp.data();
     ip = "localhost";
     port = dialog.portEdit->text().toInt();
 
@@ -130,17 +129,11 @@ int main(int argc, char *argv[])
 
 
 void readFromServ(void* arg) {
-    printf("Ready to read\n");
+    cout << "Ready to read" << endl;
     int sortie = 0;
     args* tmp = (args*)arg;
     int socket = tmp->socket;
     Window* w = tmp->window;
-
-    w->addConnected("machin");
-    w->addConnected("truc");
-    w->addConnected("bidule");
-    w->addConnected("chouette");
-    w->removeConnected("truc");
 
     char buffIn[TAILLE_MAX];
 
@@ -155,7 +148,7 @@ void readFromServ(void* arg) {
         }
 
         // Protocole de lecture
-        printf("message:%s\n", buffIn);
+        cout << "Receive from server : " << buffIn << endl;
         if(strncmp(buffIn, "close:", 6) == 0)
         {
             printf("Fin de connexion par le serveur, extinction.\n");

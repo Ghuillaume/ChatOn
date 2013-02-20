@@ -4,23 +4,15 @@ ConnexionDialog::ConnexionDialog(QWidget* parent):
     QDialog ( parent )
 {
 
-	int width = 250;
-	int height = 150;
-
     this->setObjectName("Dialog");
-    this->resize(width, height);
     this->setWindowTitle(QString::fromUtf8("Connexion au serveur"));
 
     frame = new QWidget(this);
     frame->setObjectName("frame");
-    //frame->setGeometry(QRect(10, 10, 500, 220));
 
     formLayoutWidget = new QWidget(frame);
     formLayoutWidget->setObjectName(QString::fromUtf8("formLayoutWidget"));
-    //formLayoutWidget->setGeometry(QRect(10, 10, 450, 200));
-    formLayoutWidget->setMinimumSize(width-30, height-30);
     formLayout = new QFormLayout(formLayoutWidget);
-    //formLayout->setFieldGrowthPolicy(QFormLayout::AllNonFixedFieldsGrow);
     formLayout->setObjectName(QString::fromUtf8("formLayout"));
     formLayout->setContentsMargins(10, 10, 10, 10);
 
@@ -46,7 +38,6 @@ ConnexionDialog::ConnexionDialog(QWidget* parent):
 
     pseudoEdit = new QLineEdit(formLayoutWidget);
     pseudoEdit->setObjectName(QString::fromUtf8("pseudoEdit"));
-    pseudoEdit->setText("TestLogin");
     formLayout->setWidget(0, QFormLayout::FieldRole, pseudoEdit);
 
     serverEdit = new QLineEdit(formLayoutWidget);
@@ -57,6 +48,10 @@ ConnexionDialog::ConnexionDialog(QWidget* parent):
     portEdit->setText(QString::fromUtf8("5555"));
     portEdit->setObjectName(QString::fromUtf8("portEdit"));
     formLayout->setWidget(2, QFormLayout::FieldRole, portEdit);
+
+
+    pseudoEdit->setText("TestPseudo");
+    serverEdit->setText("localhost");
 
 
 
@@ -70,7 +65,8 @@ ConnexionDialog::ConnexionDialog(QWidget* parent):
     QObject::connect(this, SIGNAL(acceptedAndOk()), this, SLOT(accept()));
     QObject::connect(this->buttonBox, SIGNAL(rejected()), this, SLOT(close()));
 
-
+    formLayoutWidget->resize(formLayout->sizeHint());
+    this->resize(formLayout->sizeHint());
 }
 
 ConnexionDialog::~ConnexionDialog()
