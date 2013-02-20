@@ -7,6 +7,9 @@ TARGET =
 DEPENDPATH += .
 INCLUDEPATH += .
 
+CFLAGS += -fpermissive
+CXXFLAGS += -fpermissive
+
 # Input
 HEADERS += ConnexionDialog.hpp PrivateTab.hpp Window.hpp ../tools/common.h
 SOURCES += ConnexionDialog.cpp main.cpp PrivateTab.cpp Window.cpp
