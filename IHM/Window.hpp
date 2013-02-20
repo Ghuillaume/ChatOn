@@ -11,6 +11,7 @@
 #include <QListWidget>
 #include <QLabel>
 #include <QPushButton>
+#include <map>
 
 #include <iostream>
 
@@ -25,6 +26,10 @@
 
 using namespace std;
 
+class PrivateTab;
+typedef map<string, PrivateTab*> ListOfTab;
+typedef pair<string, PrivateTab*> Tab;
+
 class Window : public QMainWindow
 {
     Q_OBJECT
@@ -37,10 +42,12 @@ class Window : public QMainWindow
         void removeConnected(string name);
 
         void sendText(QString text, string dest = "");
+        void receiveText(const char* msg, const char* pseudo, bool isPrivate);
         QString commandProcessing(QString text);
 
 
         QTabWidget* tabWidget;
+        ListOfTab listOfTabs;
 
 	private:
         int serverSocket;

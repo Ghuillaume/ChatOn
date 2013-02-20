@@ -33,9 +33,12 @@ class PrivateTab : public QWidget
 {
     Q_OBJECT
     public:
-        explicit PrivateTab(QWidget *parent = 0, Window* mainWindow = NULL);
+        explicit PrivateTab(QWidget *parent = 0, Window* mainWindow = NULL, QString pseudo = "NULL");
+
+        QString pseudo;
 
         void setObjects();
+        void addText(QString msg, QString pseudo);
 
     private:
         Window* mainWindow;
@@ -51,5 +54,6 @@ class PrivateTab : public QWidget
         void textEntered();
     
 };
+
 
 #endif // PRIVATETAB_HPP

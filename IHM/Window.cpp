@@ -98,18 +98,18 @@ void Window::removeConnected(string name) {
 
 void Window::newTab(QListWidgetItem* itemClicked) {
 
-	//while(true) {
     string title = itemClicked->text().toStdString();
 
     // Création d'un nouvel onglet
-    PrivateTab* tab = new PrivateTab(tabWidget, this);
+    PrivateTab* tab = new PrivateTab(tabWidget, this, itemClicked->text());
     tab->setObjectName(QString::fromUtf8("tab"));
     tabWidget->addTab(tab, QString());
     tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", title.c_str(), 0, QApplication::UnicodeUTF8));
     tab->setObjects();
 
+    this->listOfTabs.insert(Tab(title, tab));
+
     this->tabWidget->setCurrentWidget(tab);
-    //}
 
 }
 
@@ -145,6 +145,39 @@ void Window::sendText(QString text, string dest) {
 
     std::cout << "Sending : " << toSend.toStdString().c_str() << std::endl;
     write(this->serverSocket,toSend.toStdString().c_str(),strlen(toSend.toStdString().c_str()));
+}
+
+
+void Window::receiveText(const char *msg, const char *pseudo, bool isPrivate) {
+
+    QString stringPseudo = QString::fromAscii(pseudo);
+    QString stringMsg = QString::fromAscii(msg);
+
+    if(!isPrivate) {
+        this->history->append(stringPseudo + " : " + stringMsg);
+    }
+    else {
+        bool tabFound = false;
+        for(ListOfTab::iterator it = listOfTabs.begin() ; it != listOfTabs.end() ; it++) {
+            if(it->first == stringPseudo.toStdString()) {
+                it->second->addText(stringMsg, stringPseudo);
+                tabFound = true;
+            }
+        }
+
+        if(!tabFound) {
+            // Création d'un nouvel onglet
+            PrivateTab* tab = new PrivateTab(tabWidget, this, stringPseudo);
+            tab->setObjectName(QString::fromUtf8("tab"));
+            tabWidget->addTab(tab, QString());
+            tabWidget->setTabText(tabWidget->indexOf(tab), QApplication::translate("MainWindow", stringPseudo.toStdString().c_str(), 0, QApplication::UnicodeUTF8));
+            tab->setObjects();
+
+            this->listOfTabs.insert(Tab(stringPseudo.toStdString(), tab));
+
+            this->tabWidget->setCurrentWidget(tab);
+        }
+    }
 }
 
 

@@ -9,9 +9,6 @@
 		- timeout
 		
 	Client :
-		- Traitement de réception de message
-		- Traitement de notification de déconnexion
-		- popup de départ pour choisir IP du serveur & pseudo
 		- fermeture des onglets
 		
 	Making todolists

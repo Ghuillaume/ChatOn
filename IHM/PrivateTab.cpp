@@ -1,11 +1,11 @@
 #include "PrivateTab.hpp"
 
-PrivateTab::PrivateTab(QWidget *parent, Window *mainWindow) :
+PrivateTab::PrivateTab(QWidget *parent, Window *mainWindow, QString pseudo) :
     QWidget(parent)
 {
     this->mainWindow = mainWindow;
 
-
+    this->pseudo = pseudo;
 }
 
 void PrivateTab::setObjects() {
@@ -38,4 +38,10 @@ void PrivateTab::textEntered() {
             this->mainWindow->sendText(texte, this->mainWindow->tabWidget->tabText(this->mainWindow->tabWidget->indexOf(this)).toStdString());
         }
     }
+}
+
+
+void PrivateTab::addText(QString msg, QString pseudo) {
+
+    this->history->append(pseudo + " : " + msg);
 }
