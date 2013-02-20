@@ -25,23 +25,34 @@ typedef struct servent servent;
 /* Variables globales */
 int slots_serveurs_restants = NB_SLOTS_SERVEUR;
 utilisateur** liste_connectes;
+utilisateur* utilisateur_par_defaut;
 File *file_message;
 Element *element_courant;
+pthread_mutex_t mutex_file = PTHREAD_MUTEX_INITIALIZER;
+//TODO : mutex pour la liste des utilisateurs et le nombre de slots restants sur le serveur
 
+// Threads de communication avec le client
+void protocoleReception(void* arg);
+void protocoleEnvoi(void* arg);
 
-
-// Thread de communication avec le client
-void clientProtocol(void* arg);
 
 utilisateur* initConnection(int socket);
 
 
-int main(int argc, char** argv) {
+int main(int argc, char** argv)
+{
 	if ((file_message = (File *) malloc (sizeof (File))) == NULL)
 		return -1;
 	if ((element_courant = (Element *) malloc (sizeof (Element))) == NULL)
 		return -1;
+	// On initialise l'utilisateur destinataire qui servira pour le "/all"
+	if ((utilisateur_par_defaut = (utilisateur *) malloc (sizeof (utilisateur))) == NULL)
+		return -1;	
+	
+	strcpy(utilisateur_par_defaut->pseudo, "all");
 		
+	
+	// Appel à la fonction d'initialisation du serveur	
 	initialisation (file_message);
 	
 	// Création de la liste des connectés sur le serveur et initialisation à NULL
@@ -112,8 +123,7 @@ int main(int argc, char** argv) {
 			perror("erreur : impossible d'accepter la connexion avec le client.");
 			exit(1);
 		}
-		
-		
+				
 		clientThreadArgs args;
 		args.socket = nouv_socket_descriptor;
 		args.user = initConnection(nouv_socket_descriptor);
@@ -121,7 +131,8 @@ int main(int argc, char** argv) {
 		if(args.user == NULL) {
 			exit(1);
 		}
-		if(pthread_create(&clientHandler, NULL, clientProtocol, (void*)&args) < 0) {
+		if((pthread_create(&clientHandler, NULL, protocoleReception, (void*)&args) < 0) &&
+				(pthread_create(&clientHandler, NULL, protocoleEnvoi, (void*)&args) < 0)) {
 			perror("Thread problem\n");
 			exit(1);
 		}
@@ -133,7 +144,8 @@ int main(int argc, char** argv) {
 }
 
 
-utilisateur* initConnection(int socket) {
+utilisateur* initConnection(int socket)
+{
 
 	char buffer[TAILLE_MAX];
 	
@@ -211,7 +223,8 @@ utilisateur* initConnection(int socket) {
 }
 
 
-void clientProtocol(void* arg) {
+void protocoleReception(void* arg)
+{
 
     clientThreadArgs* tmp = (clientThreadArgs*)arg;
     int socket = tmp->socket;
@@ -273,7 +286,10 @@ void clientProtocol(void* arg) {
 		
 			strcpy(msg->message, chaine_message);
 			
+			// On verrouille la file de messsage gloable, on ajoute un message et on déverrouille
+   			pthread_mutex_lock(&mutex_file);
 			ajouter_file(file_message, element_courant, msg);
+   			pthread_mutex_unlock(&mutex_file);
 			
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
@@ -302,4 +318,30 @@ void clientProtocol(void* arg) {
 	close(socket);
 	slots_serveurs_restants++;
 	return;
+}
+
+// Thread d'envoi des messages de la file
+void protocoleEnvoi(void* arg)
+{
+    clientThreadArgs* tmp = (clientThreadArgs*)arg;
+    int socket = tmp->socket;
+    utilisateur* utilisateur_courant = tmp->user;
+	
+	while (utilisateur_courant != NULL)
+	{
+   		Element* element_courant = file_message->debut;
+   		while (element_courant != NULL)
+   		{
+   			if (strcmp(element_courant->msg->dest, utilisateur_courant->pseudo) == 0)
+   			{
+   				char message_complet[600] = "";
+   				// Construction du message sous la forme : "pv;pseudo_source;message"
+   				strcpy(message_complet, strcat("pv;", strcat(element_courant->msg->source, strcat(";", element_courant->msg->message))));
+   				printf("%s\n", message_complet);
+				write(socket, message_complet, strlen(message_complet));
+   			}
+   			element_courant = element_courant->suivant;
+   		}
+   		sleep(1);
+	}
 }
