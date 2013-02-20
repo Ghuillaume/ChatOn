@@ -158,9 +158,8 @@ void readFromServ(void* arg) {
         }
         else if(strncmp(buffIn, "connected:", 10) == 0)
         {
-            char pseudo[TAILLE_MAX];
-            copier_chaine(pseudo, buffIn, 10, strlen(buffIn));
-            w->addConnected(pseudo);
+            char** splittedBuffer = split(buffIn, ":", 0);
+            w->addConnected(splittedBuffer[1]);
         }
         else if(strncmp(buffIn, "disconnected:", 13) == 0)
         {
@@ -215,6 +214,10 @@ int copier_chaine(char *dest, const char *src, int debut, int longueur)
     return i;
 }
 
+
+/********************************/
+/**** FROM CODESOURCE.COM *******/
+/********************************/
 
 // Retour tableau des chaines recupérer. Terminé par NULL.
 // chaine : chaine à splitter
