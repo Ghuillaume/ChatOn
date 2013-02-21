@@ -272,21 +272,11 @@ void protocoleReception(void* arg)
 				perror("malloc error");
 				return; // ignorer le message
 			}
-			
 		
 			// On crée le message et on le remplit
 			strcpy(msg->source, currentUser->pseudo);
 			strcpy(msg->message, chaine_message);
-			for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
-			{
-				if (liste_connectes[i] != NULL)
-				{
-					if(strcmp(liste_connectes[i]->pseudo,destinataire) == 0)
-					{
-						strcpy(msg->dest, liste_connectes[i]->pseudo);
-					}
-				}
-			}
+			strcpy(msg->dest, destinataire);
 			
 			
 			// On verrouille la file de messsage gloable, on ajoute un message et on déverrouille
@@ -301,8 +291,26 @@ void protocoleReception(void* arg)
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
 		{
-			// TODO
-		
+			char commande[TAILLE_MAX];
+			char chaine_message[TAILLE_MAX];
+			
+			message *msg = malloc(sizeof(message));
+			if (msg == NULL)
+			{
+				perror("malloc error");
+				return; // ignorer le message
+			}
+			
+			// Découpage de la phrase et assemblage du message
+			separer_phrase(commande, chaine_message, buffer, 1);
+			strcpy(msg->source, currentUser->pseudo);
+			strcpy(msg->dest, "all");
+			strcpy(msg->message, chaine_message);
+			
+			// On verrouille la file de messsage gloable, on ajoute le message et on déverrouille
+   			pthread_mutex_lock(&mutex_file);
+			push(file_message, msg);
+   			pthread_mutex_unlock(&mutex_file);
 		}
 		else
 		{
@@ -335,7 +343,7 @@ void protocoleEnvoi(void* arg)
     utilisateur* utilisateur_courant = tmp->user;
 	
 	// Tant que l'utilisateur est connecté, on consulte la file de message
-	while (utilisateur_courant != NULL)
+	/*while (utilisateur_courant != NULL)
 	{
    		Element* element_courant = file_message->debut;
    		while (element_courant != NULL)
@@ -350,8 +358,30 @@ void protocoleEnvoi(void* arg)
    				printf("Message à envoyer (Serveur -> client): '%s'\n", message_complet);
 				write(socket, message_complet, strlen(message_complet));
    			}
+   			else if (strcmp(element_courant->msg->dest, utilisateur_par_defaut->pseudo) == 0)
+   			{
+   				char message_complet[600] = "";
+   				// Construction du message sous la forme : "all;pseudo_source;message"
+   				strcpy(message_complet, strcat("all;", strcat(element_courant->msg->source, strcat(";", element_courant->msg->message))));
+   				printf("Message à envoyer (Serveur -> clients): '%s'\n", message_complet);
+				write(socket, message_complet, strlen(message_complet));
+   			}
    			element_courant = element_courant->suivant;
    		}
    		sleep(1);
+	}*/
+}
+
+int pseudo_already_used(char pseudo_temp[LONGUEUR_MAX_PSEUDO+1])
+{
+	int exists = 0;
+	// Pour tous les gens connectés, le pseudo a-t-il déjà été utilisé ?
+	for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
+	{
+		if (liste_connectes[i] != NULL)
+		{
+			exists |= (!strcmp(liste_connectes[i]->pseudo, pseudo_temp));
+		}
 	}
+	return exists;
 }
