@@ -131,9 +131,14 @@ int main(int argc, char** argv)
 		if(args.user == NULL) {
 			exit(1);
 		}
-		if((pthread_create(&clientHandler, NULL, protocoleReception, (void*)&args) < 0) &&
-				(pthread_create(&clientHandler, NULL, protocoleEnvoi, (void*)&args) < 0)) {
-			perror("Thread problem\n");
+		if (pthread_create(&clientHandler, NULL, protocoleEnvoi, (void*)&args) < 0)
+		{
+			perror("Sending thread problem\n");
+			exit(1);
+		} 
+		if (pthread_create(&clientHandler, NULL, protocoleReception, (void*)&args) < 0)
+		{
+			perror("Receiving thread problem\n");
 			exit(1);
 		}
 	}
@@ -255,6 +260,7 @@ void protocoleReception(void* arg)
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
+			printf("/MSG\n");
 			// On découpe les différentes parties de la chaine (commande, destinataire, message)
 			char commande[11];
 			char reste_commande[TAILLE_MAX];
@@ -283,14 +289,25 @@ void protocoleReception(void* arg)
 					}
 				}
 			}
-		
-			strcpy(msg->message, chaine_message);
 			
 			// On verrouille la file de messsage gloable, on ajoute un message et on déverrouille
    			pthread_mutex_lock(&mutex_file);
 			ajouter_file(file_message, element_courant, msg);
+			printf("Début (%d)\n", file_message->taille);
    			pthread_mutex_unlock(&mutex_file);
-			
+	   			
+	   		/*Element* element_courant = file_message->debut;
+	   		while (element_courant != NULL)
+	   		{
+	   			printf("MESSAGE:\n%s\n", element_courant->msg->message);
+	   			element_courant = element_courant->suivant;
+	   		}*/
+	   		
+	   		message* loool;
+	   		while(loool = retirer_file(file_message)) {
+	   			printf("retirer\n");
+	   		}
+			printf("Fin\n");
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
 		{
@@ -327,17 +344,20 @@ void protocoleEnvoi(void* arg)
     int socket = tmp->socket;
     utilisateur* utilisateur_courant = tmp->user;
 	
+	// Tant que l'utilisateur est connecté, on consulte la file de message
 	while (utilisateur_courant != NULL)
 	{
    		Element* element_courant = file_message->debut;
    		while (element_courant != NULL)
    		{
+   			printf("MESSAGE:\n%s\n", element_courant->msg->message);
+   			// On parcourt la file et on cherche les messages qui concerne l'utilisateur
    			if (strcmp(element_courant->msg->dest, utilisateur_courant->pseudo) == 0)
    			{
    				char message_complet[600] = "";
    				// Construction du message sous la forme : "pv;pseudo_source;message"
    				strcpy(message_complet, strcat("pv;", strcat(element_courant->msg->source, strcat(";", element_courant->msg->message))));
-   				printf("%s\n", message_complet);
+   				printf("Message à envoyer (Serveur -> client): '%s'\n", message_complet);
 				write(socket, message_complet, strlen(message_complet));
    			}
    			element_courant = element_courant->suivant;
