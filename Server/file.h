@@ -21,7 +21,6 @@ void initFile(File* file);
 int push(File* file, message *msg);
 
 /* DE_FILER*/
-//message* pop(File* file);
 Node* getFirstMessage(File* file, char* dest);
 
 void fileDebug(File* f);

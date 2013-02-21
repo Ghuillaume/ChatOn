@@ -275,9 +275,10 @@ void protocoleReception(void* arg)
 		
 			// On crée le message et on le remplit
 			strcpy(msg->source, currentUser->pseudo);
-			printf("ADDDDDD %s (%d)\n", chaine_message, strlen(chaine_message));
+			printf("ADDDDDD %s to %s (%d)\n", chaine_message, destinataire, strlen(destinataire));
 			strcpy(msg->message, chaine_message);
 			strcpy(msg->dest, destinataire);
+			msg->forAll = 0;
 			
 			
 			// On verrouille la file de messsage gloable, on ajoute un message et on déverrouille
@@ -293,24 +294,40 @@ void protocoleReception(void* arg)
 			char commande[TAILLE_MAX];
 			char chaine_message[TAILLE_MAX];
 			
-			message *msg = malloc(sizeof(message));
-			if (msg == NULL)
-			{
-				perror("malloc error");
-				return; // ignorer le message
-			}
-			
-			// Découpage de la phrase et assemblage du message
 			separer_phrase(commande, chaine_message, buffer, 1);
-			strcpy(msg->source, currentUser->pseudo);
-			strcpy(msg->dest, "all");
-			strcpy(msg->message, chaine_message);
-			printf("ADDDDDD %s (%d)\n", chaine_message, strlen(chaine_message));
+			printf("To all : %s\n", chaine_message);
 			
-			// On verrouille la file de messsage gloable, on ajoute le message et on déverrouille
-   			pthread_mutex_lock(&mutex_file);
-			push(file_message, msg);
-   			pthread_mutex_unlock(&mutex_file);
+			// Pour chaque utilisateur connecté, on ajoute un message à la file
+			message** msg = malloc(sizeof(message*));
+			int i = 0;
+			while (i < NB_SLOTS_SERVEUR)
+			{
+				if(liste_connectes[i] != NULL) {
+					
+					// On ajoute pour tout le monde sauf celui qui a envoyé le message
+					if(strcmp(currentUser->pseudo, liste_connectes[i]->pseudo) != 0) {
+						msg[i] = malloc(sizeof(message));
+						if (msg[i] == NULL)
+						{
+							perror("malloc error");
+							return; // ignorer le message
+						}
+			
+						// Découpage de la phrase et assemblage du message
+						strcpy(msg[i]->source, currentUser->pseudo);
+						strcpy(msg[i]->dest, liste_connectes[i]->pseudo);
+						strcpy(msg[i]->message, chaine_message);
+						msg[i]->forAll = 1;
+						printf("ADDDDDD %s (%d)\n", chaine_message, strlen(chaine_message));
+			
+						// On verrouille la file de messsage gloable, on ajoute le message et on déverrouille
+			   			pthread_mutex_lock(&mutex_file);
+						push(file_message, msg[i]);
+			   			pthread_mutex_unlock(&mutex_file);
+			   		}
+		   		}
+		   		i++;
+	   		}
 		}
 		else
 		{
@@ -360,15 +377,23 @@ void protocoleEnvoi(void* arg)
 			memset(message_complet, '\0', 600);
    			
 			// Private message "pv;pseudo_source;message"
-			if (strcmp(toSend->msg->dest, utilisateur_courant->pseudo) == 0)
+			if (toSend->msg->forAll == 0)
    			{
-   				strcpy(message_complet, strcat("pv;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
+   				//strcpy(message_complet, strcat("pv;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
+   				strcpy(message_complet, "pv;");
+   				strcat(message_complet, toSend->msg->source);
+   				strcat(message_complet, ";");
+   				strcat(message_complet, toSend->msg->message);
    			}
    			
    			// Public message "all;pseudo_source;message"
-   			else if (strcmp(toSend->msg->dest, "all") == 0)
+   			else if (toSend->msg->forAll == 1)
    			{
-   				strcpy(message_complet, strcat("all;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
+   				//strcpy(message_complet, strcat("all;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
+   				strcpy(message_complet, "all;");
+   				strcat(message_complet, toSend->msg->source);
+   				strcat(message_complet, ";");
+   				strcat(message_complet, toSend->msg->message);
    			}
 			
    			printf("Sending to %s : '%s'\n", utilisateur_courant->pseudo, message_complet);

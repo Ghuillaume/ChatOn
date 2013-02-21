@@ -11,6 +11,7 @@
 	Client :
 		- fermeture des onglets
 		- interdire pseudo déjà choisi
+		- reception d'un message pv : fail
 	
 	
 	Le client quitte -> le thread de lecture de la file de message continue
