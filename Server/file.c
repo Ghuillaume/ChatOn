@@ -58,16 +58,21 @@ message* pop(File * file)
 	return toPop;
 }*/
 
-message* getFirstMessage(File* file, char* dest) {
+Node* getFirstMessage(File* file, char* dest) {
 
 	// On parcourt la file pour chercher le premier message qu'il faudra envoyer à dest
 	Node* current = file->debut;
 	Node* previous = NULL;
 	
+	printf("Looking for messages for %s\n", dest);
+	
 	while(current != NULL) {
 	
-		if( strcmp(current->msg->dest, "all") == 0 || strcmp(current->msg->dest, dest) == 0) {
 		
+		printf("%s (%d) == %s (%d) ?? ", current->msg->dest, strlen(current->msg->dest), dest, strlen(dest));
+	
+		if( strcmp(current->msg->dest, "all") == 0 || strcmp(current->msg->dest, dest) == 0) {
+			printf("OK\n");
 			// Si on enlève le premier élément, on change le début de file
 			if(previous == NULL) {
 				file->debut = current->suivant;			
@@ -77,7 +82,10 @@ message* getFirstMessage(File* file, char* dest) {
 				previous->suivant = current->suivant;
 			}
 			
-			return current->msg;
+			return current;
+		}
+		else {
+			printf("No\n");
 		}
 		
 		current = current->suivant;

@@ -235,7 +235,7 @@ void protocoleReception(void* arg)
 	int longueur;
 	
 	
-	printf("Thread %s initialized\n", currentUser);
+	printf("Reading thread %s initialized\n", currentUser);
 	
 	int clientConnected = 1;
 	while(longueur = read(socket, buffer, sizeof(buffer)) && clientConnected) {
@@ -275,6 +275,7 @@ void protocoleReception(void* arg)
 		
 			// On crée le message et on le remplit
 			strcpy(msg->source, currentUser->pseudo);
+			printf("ADDDDDD %s (%d)\n", chaine_message, strlen(chaine_message));
 			strcpy(msg->message, chaine_message);
 			strcpy(msg->dest, destinataire);
 			
@@ -304,6 +305,7 @@ void protocoleReception(void* arg)
 			strcpy(msg->source, currentUser->pseudo);
 			strcpy(msg->dest, "all");
 			strcpy(msg->message, chaine_message);
+			printf("ADDDDDD %s (%d)\n", chaine_message, strlen(chaine_message));
 			
 			// On verrouille la file de messsage gloable, on ajoute le message et on déverrouille
    			pthread_mutex_lock(&mutex_file);
@@ -342,35 +344,43 @@ void protocoleEnvoi(void* arg)
     clientThreadArgs* tmp = (clientThreadArgs*)arg;
     int socket = tmp->socket;
     utilisateur* utilisateur_courant = tmp->user;
+    
+	printf("Sending thread %s initialized\n", utilisateur_courant->pseudo);
 	
 	// Tant que l'utilisateur est connecté, on consulte la file de message
-	/*while (utilisateur_courant != NULL)
+	
+	while (utilisateur_courant != NULL)
 	{
-   		Element* element_courant = file_message->debut;
-   		while (element_courant != NULL)
-   		{
-   			printf("MESSAGE:\n%s\n", element_courant->msg->message);
-   			// On parcourt la file et on cherche les messages qui concerne l'utilisateur
-   			if (strcmp(element_courant->msg->dest, utilisateur_courant->pseudo) == 0)
+		Node* toSend = getFirstMessage(file_message, utilisateur_courant->pseudo);
+		
+		if(toSend != NULL) {
+			printf("Getting msg from file : %s\n", toSend->msg->message);
+			
+   			char message_complet[600] = "";
+			memset(message_complet, '\0', 600);
+   			
+			// Private message "pv;pseudo_source;message"
+			if (strcmp(toSend->msg->dest, utilisateur_courant->pseudo) == 0)
    			{
-   				char message_complet[600] = "";
-   				// Construction du message sous la forme : "pv;pseudo_source;message"
-   				strcpy(message_complet, strcat("pv;", strcat(element_courant->msg->source, strcat(";", element_courant->msg->message))));
-   				printf("Message à envoyer (Serveur -> client): '%s'\n", message_complet);
-				write(socket, message_complet, strlen(message_complet));
+   				strcpy(message_complet, strcat("pv;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
    			}
-   			else if (strcmp(element_courant->msg->dest, utilisateur_par_defaut->pseudo) == 0)
+   			
+   			// Public message "all;pseudo_source;message"
+   			else if (strcmp(toSend->msg->dest, "all") == 0)
    			{
-   				char message_complet[600] = "";
-   				// Construction du message sous la forme : "all;pseudo_source;message"
-   				strcpy(message_complet, strcat("all;", strcat(element_courant->msg->source, strcat(";", element_courant->msg->message))));
-   				printf("Message à envoyer (Serveur -> clients): '%s'\n", message_complet);
-				write(socket, message_complet, strlen(message_complet));
+   				strcpy(message_complet, strcat("all;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
    			}
-   			element_courant = element_courant->suivant;
-   		}
-   		sleep(1);
-	}*/
+			
+   			printf("Sending to %s : '%s'\n", utilisateur_courant->pseudo, message_complet);
+			write(socket, message_complet, strlen(message_complet));
+			
+			// Libération mémoire
+			free(toSend);
+			
+		}
+	
+		sleep(1);
+	}
 }
 
 int pseudo_already_used(char pseudo_temp[LONGUEUR_MAX_PSEUDO+1])

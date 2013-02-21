@@ -11,5 +11,6 @@
 	Client :
 		- fermeture des onglets
 		- interdire pseudo déjà choisi
-		
-	Making todolists
+	
+	
+	Le client quitte -> le thread de lecture de la file de message continue

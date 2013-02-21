@@ -22,7 +22,7 @@ int push(File* file, message *msg);
 
 /* DE_FILER*/
 //message* pop(File* file);
-message* getFirstMessage(File* file, char* dest);
+Node* getFirstMessage(File* file, char* dest);
 
 void fileDebug(File* f);
 
