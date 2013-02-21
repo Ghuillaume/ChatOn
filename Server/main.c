@@ -213,8 +213,42 @@ utilisateur* initConnection(int socket)
 			strcat(buffer, liste_connectes[i]->pseudo);
 			strcat(buffer, "\0");
 			write(socket, buffer, strlen(buffer));
+			write(socket, "\n", 1);
 			memset(buffer, '\0', TAILLE_MAX);
 		}
+	}
+	
+	
+	// Notification de connexion aux utilisateurs
+	// Pour chaque utilisateur connecté, on ajoute un message à la file
+	message** msg = malloc(sizeof(message*));
+	i = 0;
+	while (i < NB_SLOTS_SERVEUR)
+	{
+		if(liste_connectes[i] != NULL) {
+			
+			// On ajoute pour tout le monde sauf celui qui a envoyé le message
+			if(strcmp(nouvel_utilisateur->pseudo, liste_connectes[i]->pseudo) != 0) {
+				msg[i] = malloc(sizeof(message));
+				if (msg[i] == NULL)
+				{
+					perror("malloc error");
+					return; // ignorer le message
+				}
+	
+				// Découpage de la phrase et assemblage du message
+				strcpy(msg[i]->source, nouvel_utilisateur->pseudo);
+				strcpy(msg[i]->dest, liste_connectes[i]->pseudo);
+				strcpy(msg[i]->message, "/notifyConnection");
+				msg[i]->forAll = 1;
+	
+				// On verrouille la file de messsage globale, on ajoute le message et on déverrouille
+	   			pthread_mutex_lock(&mutex_file);
+				push(file_message, msg[i]);
+	   			pthread_mutex_unlock(&mutex_file);
+	   		}
+   		}
+   		i++;
 	}
 	
 	printf("Client initialized !!\n");
@@ -253,6 +287,38 @@ void protocoleReception(void* arg)
 		{
 			printf("%s disconnected\n", currentUser->pseudo);
 			clientConnected = 0;
+			
+			// Notification de déconnexion aux utilisateurs
+			// Pour chaque utilisateur connecté, on ajoute un message à la file
+			message** msg = malloc(sizeof(message*));
+			int i = 0;
+			while (i < NB_SLOTS_SERVEUR)
+			{
+				if(liste_connectes[i] != NULL) {
+			
+					// On ajoute pour tout le monde sauf celui qui a envoyé le message
+					if(strcmp(currentUser->pseudo, liste_connectes[i]->pseudo) != 0) {
+						msg[i] = malloc(sizeof(message));
+						if (msg[i] == NULL)
+						{
+							perror("malloc error");
+							return; // ignorer le message
+						}
+	
+						// Découpage de la phrase et assemblage du message
+						strcpy(msg[i]->source, currentUser->pseudo);
+						strcpy(msg[i]->dest, liste_connectes[i]->pseudo);
+						strcpy(msg[i]->message, "/notifyDisconnection");
+						msg[i]->forAll = 1;
+	
+						// On verrouille la file de messsage globale, on ajoute le message et on déverrouille
+			   			pthread_mutex_lock(&mutex_file);
+						push(file_message, msg[i]);
+			   			pthread_mutex_unlock(&mutex_file);
+			   		}
+		   		}
+		   		i++;
+			}
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
@@ -368,16 +434,29 @@ void protocoleEnvoi(void* arg)
 	
 	while (utilisateur_courant != NULL)
 	{
+	
+		pthread_mutex_lock(&mutex_file);
 		Node* toSend = getFirstMessage(file_message, utilisateur_courant->pseudo);
+		pthread_mutex_unlock(&mutex_file);
 		
 		if(toSend != NULL) {
 			printf("Getting msg from file : %s\n", toSend->msg->message);
 			
    			char message_complet[600] = "";
 			memset(message_complet, '\0', 600);
+			
+			if(strcmp(toSend->msg->message, "/notifyConnection") == 0) {
+				strcpy(message_complet, "connected:");
+				strcat(message_complet, toSend->msg->source);		
+			}
+			
+			else if(strcmp(toSend->msg->message, "/notifyDisconnection") == 0) {
+				strcpy(message_complet, "disconnected:");
+				strcat(message_complet, toSend->msg->source);
+			}
    			
 			// Private message "pv;pseudo_source;message"
-			if (toSend->msg->forAll == 0)
+			else if (toSend->msg->forAll == 0)
    			{
    				//strcpy(message_complet, strcat("pv;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
    				strcpy(message_complet, "pv;");

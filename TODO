@@ -1,17 +1,13 @@
 
 	Serveur :
 		- envoi des personnes connectées : soucis de chaine
-		- traiter /all msg
-		- ajouter msg à la file de message (pour /all et /msg)
-		- boucler de scrutation de la file de message pour chaque thread et envoie des messages
-		- Connexion d'un client -> notification à tous les autres clients (dans fonction initConnection)
-		- idem deconnexion
+		- notification de déconnexion (capter la déconnexion, fermer le thread de lecture, et envoyer notif de la forme /notifyDisconnection)
 		- timeout
 		
 	Client :
 		- fermeture des onglets
-		- interdire pseudo déjà choisi
-		- reception d'un message pv : fail
+		- interdire pseudo déjà choisi + interdire caractères spéciaux
+		- Réception d'un PV : fail si onglet pas déjà ouvert
 	
 	
 	Le client quitte -> le thread de lecture de la file de message continue
