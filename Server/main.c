@@ -322,7 +322,6 @@ void protocoleReception(void* arg)
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
-			printf("/MSG\n");
 			// On découpe les différentes parties de la chaine (commande, destinataire, message)
 			char commande[11];
 			char reste_commande[TAILLE_MAX];
@@ -341,7 +340,6 @@ void protocoleReception(void* arg)
 		
 			// On crée le message et on le remplit
 			strcpy(msg->source, currentUser->pseudo);
-			printf("ADDDDDD %s to %s (%d)\n", chaine_message, destinataire, strlen(destinataire));
 			strcpy(msg->message, chaine_message);
 			strcpy(msg->dest, destinataire);
 			msg->forAll = 0;
@@ -350,10 +348,8 @@ void protocoleReception(void* arg)
 			// On verrouille la file de messsage gloable, on ajoute un message et on déverrouille
    			pthread_mutex_lock(&mutex_file);
 			push(file_message, msg);
-			printf("Début\n");
    			pthread_mutex_unlock(&mutex_file);
 	   		
-			printf("Fin\n");
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
 		{
@@ -361,7 +357,6 @@ void protocoleReception(void* arg)
 			char chaine_message[TAILLE_MAX];
 			
 			separer_phrase(commande, chaine_message, buffer, 1);
-			printf("To all : %s\n", chaine_message);
 			
 			// Pour chaque utilisateur connecté, on ajoute un message à la file
 			message** msg = malloc(sizeof(message*));
@@ -384,7 +379,6 @@ void protocoleReception(void* arg)
 						strcpy(msg[i]->dest, liste_connectes[i]->pseudo);
 						strcpy(msg[i]->message, chaine_message);
 						msg[i]->forAll = 1;
-						printf("ADDDDDD %s (%d)\n", chaine_message, strlen(chaine_message));
 			
 						// On verrouille la file de messsage gloable, on ajoute le message et on déverrouille
 			   			pthread_mutex_lock(&mutex_file);
@@ -440,7 +434,6 @@ void protocoleEnvoi(void* arg)
 		pthread_mutex_unlock(&mutex_file);
 		
 		if(toSend != NULL) {
-			printf("Getting msg from file : %s\n", toSend->msg->message);
 			
    			char message_complet[600] = "";
 			memset(message_complet, '\0', 600);
@@ -458,7 +451,6 @@ void protocoleEnvoi(void* arg)
 			// Private message "pv;pseudo_source;message"
 			else if (toSend->msg->forAll == 0)
    			{
-   				//strcpy(message_complet, strcat("pv;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
    				strcpy(message_complet, "pv;");
    				strcat(message_complet, toSend->msg->source);
    				strcat(message_complet, ";");
@@ -468,7 +460,6 @@ void protocoleEnvoi(void* arg)
    			// Public message "all;pseudo_source;message"
    			else if (toSend->msg->forAll == 1)
    			{
-   				//strcpy(message_complet, strcat("all;", strcat(toSend->msg->source, strcat(";", toSend->msg->message))));
    				strcpy(message_complet, "all;");
    				strcat(message_complet, toSend->msg->source);
    				strcat(message_complet, ";");

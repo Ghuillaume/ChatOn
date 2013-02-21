@@ -8,3 +8,7 @@
 		- fermeture des onglets
 		- interdire pseudo déjà choisi + interdire caractères spéciaux
 		- Réception d'un PV : fail si onglet pas déjà ouvert
+		
+		
+	QQS changements à faire pour le rendu (après tests) :
+		- virer entrées par défaut ConnexionDialog
