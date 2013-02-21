@@ -5,9 +5,12 @@
 		- timeout
 		
 	Client :
+		- Important : trouver l'adresse IP locale pour l'envoyer au serveur (actuellement: localhost est envoyé)
 		- fermeture des onglets
 		- interdire pseudo déjà choisi + interdire caractères spéciaux
-		- Réception d'un PV : fail si onglet pas déjà ouvert
+		- Réception d'un PV : fail si onglet pas déjà ouvert (parfois fail meme si onglet ouvert)
+		- Connexion impossible -> redemander l'IP
+		- Capter la touche Entrée pour envoyer le message
 		
 		
 	QQS changements à faire pour le rendu (après tests) :
