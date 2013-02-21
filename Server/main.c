@@ -285,8 +285,6 @@ void protocoleReception(void* arg)
 			printf("Début\n");
    			pthread_mutex_unlock(&mutex_file);
 	   		
-	   		fileDebug(file_message);
-	   		
 			printf("Fin\n");
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
@@ -317,6 +315,9 @@ void protocoleReception(void* arg)
 			printf("Commande non reconnue.\n");
 		}
 	
+	   		
+	   	fileDebug(file_message);
+	   	
 		memset(buffer, '\0', TAILLE_MAX);
 	}
 	

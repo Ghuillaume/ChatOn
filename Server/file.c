@@ -15,18 +15,17 @@ int push(File* file, message *msg)
 		return -1;
 		
 	toPush->msg = msg;
+	toPush->suivant = NULL;
 		
 	// Si pas encore d'élément ajouté, init de la fin
 	if(file->taille == 0) {
-		file->fin = toPush;
 		file->debut = toPush;
-		toPush->suivant = NULL;
 	}
 	else {
-		toPush->suivant = file->debut;
-		file->debut = toPush;
+		file->fin->suivant = toPush;		
 	}
 	
+	file->fin = toPush;
 	file->taille++;
 	
 	
@@ -34,7 +33,7 @@ int push(File* file, message *msg)
 	return 0;
 }
 
-/* retirer_file (supprimer) un élément de la file */
+/* retirer_file (supprimer) un élément de la file 
 message* pop(File * file)
 {
 	printf("Pophip\n");
@@ -57,6 +56,34 @@ message* pop(File * file)
 	file->taille--;
 	
 	return toPop;
+}*/
+
+message* getFirstMessage(File* file, char* dest) {
+
+	// On parcourt la file pour chercher le premier message qu'il faudra envoyer à dest
+	Node* current = file->debut;
+	Node* previous = NULL;
+	
+	while(current != NULL) {
+	
+		if( strcmp(current->msg->dest, "all") == 0 || strcmp(current->msg->dest, dest) == 0) {
+		
+			// Si on enlève le premier élément, on change le début de file
+			if(previous == NULL) {
+				file->debut = current->suivant;			
+			}
+			// Sinon, on raccorde l'élément précédent à l'élément suivant
+			else {
+				previous->suivant = current->suivant;
+			}
+			
+			return current->msg;
+		}
+		
+		current = current->suivant;
+	}
+
+	return NULL;
 }
 
 void fileDebug(File* file) {
@@ -68,12 +95,11 @@ void fileDebug(File* file) {
 		printf("File :\n");
 		
 		Node* current = file->debut;
-		printf("1. %s\n", current->msg->message);
 		
-		int i = 2;
-		while(current->suivant != NULL) {
+		int i = 1;
+		while(current != NULL) {
+			printf("%d. %s(from %s to %s)\n", i, current->msg->message, current->msg->source, current->msg->dest);
 			current = current->suivant;
-			printf("%d. %s\n", i, current->msg->message);
 			i++;
 		}
 	}
