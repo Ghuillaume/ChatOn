@@ -45,3 +45,4 @@ class ConnexionDialog: public QDialog
 };
 
 #endif
+

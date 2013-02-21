@@ -27,7 +27,6 @@ int slots_serveurs_restants = NB_SLOTS_SERVEUR;
 utilisateur** liste_connectes;
 utilisateur* utilisateur_par_defaut;
 File *file_message;
-Element *element_courant;
 pthread_mutex_t mutex_file = PTHREAD_MUTEX_INITIALIZER;
 //TODO : mutex pour la liste des utilisateurs et le nombre de slots restants sur le serveur
 
@@ -43,8 +42,7 @@ int main(int argc, char** argv)
 {
 	if ((file_message = (File *) malloc (sizeof (File))) == NULL)
 		return -1;
-	if ((element_courant = (Element *) malloc (sizeof (Element))) == NULL)
-		return -1;
+	
 	// On initialise l'utilisateur destinataire qui servira pour le "/all"
 	if ((utilisateur_par_defaut = (utilisateur *) malloc (sizeof (utilisateur))) == NULL)
 		return -1;	
@@ -53,7 +51,7 @@ int main(int argc, char** argv)
 		
 	
 	// Appel à la fonction d'initialisation du serveur	
-	initialisation (file_message);
+	initFile(file_message);
 	
 	// Création de la liste des connectés sur le serveur et initialisation à NULL
 	liste_connectes = malloc(sizeof(utilisateur*) * NB_SLOTS_SERVEUR);
@@ -204,8 +202,6 @@ utilisateur* initConnection(int socket)
 		}
 	}
 	
-	// TODO : envoyer à tous les clients l'information de la connexion du nouvel utilisateur : "connected:nouvel_utilisateur->pseudo"
-	
 	
 	// Envoie la liste des pseudos des gens connectés au nouvel utilisateur
 	int i;
@@ -276,9 +272,11 @@ void protocoleReception(void* arg)
 				perror("malloc error");
 				return; // ignorer le message
 			}
-			strcpy(msg->source, currentUser->pseudo);
+			
 		
 			// On crée le message et on le remplit
+			strcpy(msg->source, currentUser->pseudo);
+			strcpy(msg->message, chaine_message);
 			for (int i = 0; i < NB_SLOTS_SERVEUR; i++)
 			{
 				if (liste_connectes[i] != NULL)
@@ -290,23 +288,15 @@ void protocoleReception(void* arg)
 				}
 			}
 			
+			
 			// On verrouille la file de messsage gloable, on ajoute un message et on déverrouille
    			pthread_mutex_lock(&mutex_file);
-			ajouter_file(file_message, element_courant, msg);
-			printf("Début (%d)\n", file_message->taille);
+			push(file_message, msg);
+			printf("Début\n");
    			pthread_mutex_unlock(&mutex_file);
-	   			
-	   		/*Element* element_courant = file_message->debut;
-	   		while (element_courant != NULL)
-	   		{
-	   			printf("MESSAGE:\n%s\n", element_courant->msg->message);
-	   			element_courant = element_courant->suivant;
-	   		}*/
 	   		
-	   		message* loool;
-	   		while(loool = retirer_file(file_message)) {
-	   			printf("retirer\n");
-	   		}
+	   		fileDebug(file_message);
+	   		
 			printf("Fin\n");
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)

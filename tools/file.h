@@ -3,25 +3,27 @@
 
 #include "types.h"
 
-typedef struct ElementListe{
+typedef struct ListNode{
   message *msg;
-  struct ElementListe *suivant;
-} Element;
+  struct ListNode *suivant;
+} Node;
 
-typedef struct ListeRepere{
-  Element *debut;
-  Element *fin;
+typedef struct FilePtr{
+  Node *debut;
+  Node *fin;
   int taille;
 } File;
 
 /* initialisation */
-void initialisation (File * suite);
+void initFile(File* file);
 
 /* ENFILER*/
-int ajouter_file (File * suite, Element * courant, message *msg);
+int push(File* file, message *msg);
 
 /* DE_FILER*/
-message* retirer_file (File * suite);
+message* pop(File* file);
+
+void fileDebug(File* f);
 
 /* FirstInFirstOut */
 #define file_message(suite) suite->debut->msg

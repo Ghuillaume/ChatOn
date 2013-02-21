@@ -1,46 +1,80 @@
 #include "file.h"
 
-void initialisation (File *file_msg)
+void initFile(File *file)
 {
-	file_msg->debut = NULL;
-	file_msg->fin = NULL;
-	file_msg->taille = 0;
+	file->debut = NULL;
+	file->fin = NULL;
+	file->taille = 0;
 }
 
-/* ajouter_file (ajouter) un élément dans la file */
-int ajouter_file (File * file_message, Element * courant, message *msg)
+// ajouter un élément dans la file 
+int push(File* file, message *msg)
 {
-	Element *nouveau_element;
-	if ((nouveau_element = (Element *) malloc (sizeof (Element))) == NULL)
+	Node *toPush;
+	if ((toPush = (Node *) malloc (sizeof (Node))) == NULL)
 		return -1;
-
-	if(courant == NULL)
-	{
-		if(file_message->taille == 0)
-			file_message->fin = nouveau_element;
-		nouveau_element->suivant = file_message->debut;
-		file_message->debut = nouveau_element;
+		
+	toPush->msg = msg;
+		
+	// Si pas encore d'élément ajouté, init de la fin
+	if(file->taille == 0) {
+		file->fin = toPush;
+		file->debut = toPush;
+		toPush->suivant = NULL;
 	}
-	else
-	{
-		if(courant->suivant == NULL)
-			file_message->fin = nouveau_element;
-		nouveau_element->suivant = courant->suivant;
-		courant->suivant = nouveau_element;
+	else {
+		toPush->suivant = file->debut;
+		file->debut = toPush;
 	}
 	
-	file_message->taille++;
+	file->taille++;
+	
+	
+	printf("Pushed : %s\n", toPush->msg->message);
 	return 0;
 }
 
 /* retirer_file (supprimer) un élément de la file */
-message* retirer_file (File * file_message)
+message* pop(File * file)
 {
-	Element *supp_element;
-	if (file_message->taille == 0)
-		return NULL;
-	supp_element = file_message->debut;
-	file_message->debut = file_message->debut->suivant;
+	printf("Pophip\n");
+	// toPop vaut null si la file est vide
+	message* toPop = file->fin;
 	
-	return supp_element;
+	// Si la file contient un seul élément, il suffit de la vider
+	if(file->taille == 1) {
+		file->debut = NULL;
+		file->fin = NULL;
+	}
+	
+	// Recherche du noeud précédant le dernier noeud (celui à enlever) afin de le mettre en fin de file
+	Node* tmp = file->debut;
+	while(tmp->suivant->suivant != NULL)  {
+		tmp = tmp->suivant;
+	}
+	file->fin = tmp;
+	
+	file->taille--;
+	
+	return toPop;
+}
+
+void fileDebug(File* file) {
+
+	if(file->taille < 0) {
+		printf("WTF ? Taille négative\n");
+	}
+	else if(file->taille >= 0) {
+		printf("File :\n");
+		
+		Node* current = file->debut;
+		printf("1. %s\n", current->msg->message);
+		
+		int i = 2;
+		while(current->suivant != NULL) {
+			current = current->suivant;
+			printf("%d. %s\n", i, current->msg->message);
+			i++;
+		}
+	}
 }
