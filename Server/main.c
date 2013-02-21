@@ -285,13 +285,6 @@ void protocoleReception(void* arg)
 			printf("Début (%d)\n", file_message->taille);
    			pthread_mutex_unlock(&mutex_file);
 	   		
-	   		// TODO : enlever ce bloc
-	   		Element* element_courant = file_message->debut;
-	   		while (element_courant != NULL)
-	   		{
-	   			printf("MESSAGE:\n%s\n", element_courant->msg->message);
-	   			element_courant = element_courant->suivant;
-	   		}
 			printf("Fin\n");
 		}
 		else if (strncmp(buffer, "/all", 4) == 0)
