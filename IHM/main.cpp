@@ -11,7 +11,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include "../tools/common.h"
+//#include "../tools/common.h"
 
 #define TAILLE_MAX 257
 #define DELIM_PV ";"

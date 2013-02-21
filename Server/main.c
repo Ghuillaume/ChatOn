@@ -9,9 +9,9 @@
 #include <sys/time.h>
 #include <strings.h>
 
-#include "../tools/file.h"
-#include "../tools/types.h"
-#include "../tools/common.h"
+#include "file.h"
+#include "types.h"
+#include "common.h"
 
 #define	h_addr h_addr_list[0]
 #define TAILLE_MAX 256
