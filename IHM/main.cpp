@@ -42,11 +42,10 @@ int main(int argc, char *argv[])
     sockaddr_in adresse_locale; 			// adresse de socket local
     hostent *ptr_host; 						// info sur une machine hote
     servent *ptr_service; 					// info  sur service
-    char buffer[TAILLE_MAX];
-    char* prog; 								// nom du programme
-    char* host;									// nom de la machine distante
-    char* pseudo;
-    char* ip;
+    char buffer[TAILLE_MAX]; 								// nom du programme
+    char host[TAILLE_MAX] = "";									// nom de la machine distante
+    char pseudo[TAILLE_MAX] = "";
+    char ip[TAILLE_MAX] = "";
     int port;
 
 
@@ -59,10 +58,10 @@ int main(int argc, char *argv[])
     }
 
     QByteArray temp = dialog.serverEdit->text().toLocal8Bit();
-    host = temp.data();
+    strcpy(host, temp.data());
     temp = dialog.pseudoEdit->text().toLocal8Bit();
-    pseudo = temp.data();
-    ip = "localhost";
+    strcpy(pseudo, temp.data());
+    strcpy(ip, "localhost");
     port = dialog.portEdit->text().toInt();
 
     if (strlen(pseudo) > 30)

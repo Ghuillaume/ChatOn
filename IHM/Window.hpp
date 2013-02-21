@@ -14,6 +14,7 @@
 #include <map>
 
 #include <iostream>
+#include <unistd.h>
 
 #include "PrivateTab.hpp"
 
