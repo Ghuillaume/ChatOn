@@ -1,13 +1,10 @@
 
 	Serveur :
 		- envoi des personnes connectées : soucis de chaine
-		- notification de déconnexion (capter la déconnexion, fermer le thread de lecture, et envoyer notif de la forme /notifyDisconnection)
+		- Déconnexion de qqn : fermer son thread de lecture de la file de message (le thread continue, actuellement)
 		- timeout
 		
 	Client :
 		- fermeture des onglets
 		- interdire pseudo déjà choisi + interdire caractères spéciaux
 		- Réception d'un PV : fail si onglet pas déjà ouvert
-	
-	
-	Le client quitte -> le thread de lecture de la file de message continue
