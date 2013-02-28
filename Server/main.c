@@ -204,6 +204,7 @@ utilisateur* initConnection(int socket)
 	
 	
 	// Envoie la liste des pseudos des gens connectés au nouvel utilisateur
+	memset(buffer, '\0', TAILLE_MAX);
 	int i;
 	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
 	{
@@ -211,7 +212,8 @@ utilisateur* initConnection(int socket)
 		{
 			strcpy(buffer,"connected:");
 			strcat(buffer, liste_connectes[i]->pseudo);
-			strcat(buffer, "\0");
+			//strcat(buffer, "\0");
+    		buffer[strlen(buffer)] = '\0';
 			write(socket, buffer, strlen(buffer));
 			write(socket, "\n", 1);
 			memset(buffer, '\0', TAILLE_MAX);

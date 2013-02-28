@@ -1,0 +1,110 @@
+\def\clap#1{\hbox to 0pt{\hss #1\hss}}%
+\def\ligne#1
+{%
+\hbox to \hsize{%
+\vbox{\centering #1}}
+}%
+
+\def\haut#1#2#3
+{%
+\hbox to \hsize{%
+\rlap{\vtop{\raggedright #1}}%
+\hss
+\clap{\vtop{\centering #2}}%
+\hss
+\llap{\vtop{\raggedleft #3}}}
+}%
+\def\bas#1#2#3
+{%
+\hbox to \hsize{%
+\rlap{\vbox{\raggedright #1}}%
+\hss
+\clap{\vbox{\centering #2}}%
+\hss
+\llap{\vbox{\raggedleft #3}}}
+}%
+\def\logo#1#2#3
+{%
+\hbox to \hsize{%
+\rlap{\vbox{\raggedright #1}}%
+\hss
+\clap{\vbox{\centering #2}}%
+\hss
+\llap{\vbox{\raggedleft #3}}}
+}%
+\def\maketitle
+{%
+\thispagestyle{empty}\vbox to \vsize
+{%
+\begin{tabular}{lcr}
+\hbox
+{
+\mbox{%
+\hspace{4pt}%
+%\includegraphics[scale=0.8]{Images/IUT.png}%}
+\hspace{20pt}
+}
+}%
+&
+\hspace{5cm}
+&
+\raggedright
+\hbox
+{
+\mbox{%
+\hspace{20pt}%
+%\includegraphics[scale=0.6]{Images/synergie.jpg}%
+\hspace{4pt}
+}
+}%
+\end{tabular}
+
+\vspace{1cm}
+\haut{}{\@blurb}{}
+
+\vfill
+%\vspace{1cm}
+\begin{flushleft}
+\huge \@title
+\end{flushleft}
+\par
+\hrule height 2pt
+\par
+\begin{flushright}
+\Large \@author
+\par
+\end{flushright}
+%\vspace{1cm}
+\vfill
+\hbox
+{
+\mbox{%
+\hspace{4pt}%
+\logo{}{
+\includegraphics[scale=1]{univ_nantes.jpg}%
+}{}
+\hspace{4pt}
+}
+}%
+\vfill
+\bas{}{\@location, le \@date}{}
+}%
+\cleardoublepage
+}
+\def\date#1{\def\@date{#1}}
+\def\author#1{\def\@author{#1}}
+\def\title#1{\def\@title{#1}}
+\def\location#1{\def\@location{#1}}
+\def\blurb#1{\def\@blurb{#1}}
+\date{\today}
+\author{}
+%\title{Rapport de stage de deuxième année de DUT Informatique}
+\location{Nantes}\blurb{}
+\makeatother
+\title{{\sl\LARGE\textbf{TP Réseaux - ChatOn}}\normalsize}
+\author{Guillaume Charon\\Jerôme Pages}
+\blurb{%
+Université de Nantes\\
+UFR des Sciences et Techniques\\
+Master ALMA 1
+}

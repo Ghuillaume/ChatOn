@@ -1,0 +1,47 @@
+\documentclass[a4paper, 11pt, french]{report}
+\usepackage[utf8]{inputenc}	% package désignant l'encodage
+\usepackage[T1]{fontenc}	% je sais pas à quoi il sert
+\usepackage[francais]{babel} % indique qu'on écrit en français
+\usepackage{layout}	% Permet de gérer les marges
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}	% Permet de définir les marges
+\usepackage{graphicx}	% Insertion des images
+\usepackage{setspace}
+\usepackage{titlesec}
+\titleformat{\chapter}[hang]{\bf\huge}{\thechapter}{2pc}{}
+\usepackage{fancyhdr}	% Pour gérer les en-tête / pied de page
+\usepackage{placeins}	% Pour utiliser \FloatBarrier qui annule les flottants
+\usepackage{listings}	
+\usepackage{hyperref}
+
+
+\graphicspath{{img/}{../}}	% Définir l'emplacement des images
+
+\makeatletter
+
+\include{garde}
+
+\begin{document}
+
+	\pagestyle{plain}
+
+	\maketitle	% Création de la page de garde
+	\pagenumbering{arabic}
+
+	\thispagestyle{empty}
+
+
+	\renewcommand{\contentsname}{Sommaire} % Renomme la table des matières
+	\setcounter{tocdepth}{2} % Définir la profondeur de la table des matières
+	\addtocontents{toc}{%
+	\protect\setlength{\baselineskip}{1.5em}	% Définir le saut de ligne dans la TDM
+	\protect\setlength{\parskip}{0pt}	% Définir le saut de paragraphe dans la TDM
+	}
+	\tableofcontents\thispagestyle{plain}	% Table des matières
+	%\pagenumbering{arabic}
+
+	\begin{onehalfspace}
+		%inclure le contenu
+		\include{contenu}
+	\end{onehalfspace}
+
+\end{document}

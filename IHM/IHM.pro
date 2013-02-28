@@ -11,5 +11,5 @@ CFLAGS += -fpermissive
 CXXFLAGS += -fpermissive
 
 # Input
-HEADERS += ConnexionDialog.hpp PrivateTab.hpp Window.hpp ../tools/common.h
+HEADERS += ConnexionDialog.hpp PrivateTab.hpp Window.hpp ../Server/common.h
 SOURCES += ConnexionDialog.cpp main.cpp PrivateTab.cpp Window.cpp

@@ -5,3 +5,9 @@ moc_*
 server
 client
 IHM/IHM
+
+*.aux
+*.toc
+*.log
+*.out
+Rapport/Rapport.pdf

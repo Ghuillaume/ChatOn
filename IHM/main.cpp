@@ -103,6 +103,7 @@ int main(int argc, char *argv[])
     strcat(msg, pseudo);
     strcat(msg, ";");
     strcat(msg, ip);
+    msg[strlen(msg)] = '\0';
     std::cout << "Send to server : " << msg << endl;
     if ((write(socket_descriptor, msg, strlen(msg))) < 0) {
         printf("erreur : impossible d'ecrire le message destine au serveur.\n");
