@@ -176,8 +176,10 @@ utilisateur* initConnection(int socket)
 		perror("malloc");
 		return NULL;
 	}
-	nouvel_utilisateur->pseudo[LONGUEUR_MAX_PSEUDO] = '\0';
-	nouvel_utilisateur->ip[LONGUEUR_MAX_IP] = '\0';
+	//nouvel_utilisateur->pseudo[strlen(nouvel_utilisateur->pseudo)] = '\0';
+	//nouvel_utilisateur->ip[strlen(nouvel_utilisateur->ip)] = '\0';
+	memset(nouvel_utilisateur->pseudo, '\0', sizeof(nouvel_utilisateur->pseudo));
+	memset(nouvel_utilisateur->ip, '\0', sizeof(nouvel_utilisateur->ip));
 
 	// On remplit les différents champs
 	int indice = copier_chaine(nouvel_utilisateur->pseudo, buffer, 0, LONGUEUR_MAX_PSEUDO);
@@ -212,7 +214,6 @@ utilisateur* initConnection(int socket)
 		{
 			strcpy(buffer,"connected:");
 			strcat(buffer, liste_connectes[i]->pseudo);
-			//strcat(buffer, "\0");
     		buffer[strlen(buffer)] = '\0';
 			write(socket, buffer, strlen(buffer));
 			write(socket, "\n", 1);
@@ -274,7 +275,8 @@ void protocoleReception(void* arg)
 	printf("Reading thread %s initialized\n", currentUser);
 	
 	int clientConnected = 1;
-	while(longueur = read(socket, buffer, sizeof(buffer)) && clientConnected) {
+	while(longueur = read(socket, buffer, sizeof(buffer)) && clientConnected)
+	{
 
 		if(longueur <= 0)
 		{
@@ -321,6 +323,8 @@ void protocoleReception(void* arg)
 		   		}
 		   		i++;
 			}
+			// On supprime l'utilisateur pour libérer la place
+			currentUser = NULL;
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
@@ -403,6 +407,7 @@ void protocoleReception(void* arg)
 	}
 	
 	// Ferme le socket, libère le slot et termine le thread
+	/*
 	int i;
 	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
 	{
@@ -412,6 +417,7 @@ void protocoleReception(void* arg)
 		}
 	}
 	free(currentUser);
+	*/
 	close(socket);
 	slots_serveurs_restants++;
 	return;
@@ -478,6 +484,7 @@ void protocoleEnvoi(void* arg)
 	
 		sleep(1);
 	}
+	printf("FIN DE LA CONNEXION\n");
 }
 
 int pseudo_already_used(char pseudo_temp[LONGUEUR_MAX_PSEUDO+1])

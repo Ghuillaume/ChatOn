@@ -48,6 +48,8 @@ int main(int argc, char *argv[])
     char ip[TAILLE_MAX] = "";
     int port;
 
+	memset(pseudo, '\0', sizeof(pseudo));
+	memset(ip, '\0', sizeof(ip));
 
     QApplication a(argc, argv);
 	ConnexionDialog dialog(0);
