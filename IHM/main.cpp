@@ -10,9 +10,15 @@
 #include <netdb.h>
 #include <string.h>
 #include <strings.h>
+#include <stropts.h>
+#include <sys/ioctl.h>
+#include <linux/netdevice.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 
 //#include "../tools/common.h"
 
+#define INTERFACE_UTILISEE "eth0"
 #define TAILLE_MAX 257
 #define DELIM_PV ";"
 
@@ -34,6 +40,7 @@ int copier_chaine(char *dest, const char *src, int debut, int longueur);
 
 char** split(char* chaine,const char* delim,int vide);
 
+void trouver_ip(char ip[TAILLE_MAX]);
 
 int main(int argc, char *argv[])
 {
@@ -59,11 +66,16 @@ int main(int argc, char *argv[])
 		return 0;
     }
 
+	// trouver l'adresse ip de la machine
+	trouver_ip(ip);
+	printf("Utilisation de l'ip '%s'\n", ip);
+
+	// Construire le message de présentation au serveur
     QByteArray temp = dialog.serverEdit->text().toLocal8Bit();
     strcpy(host, temp.data());
     temp = dialog.pseudoEdit->text().toLocal8Bit();
     strcpy(pseudo, temp.data());
-    strcpy(ip, "localhost");
+    //strcpy(ip, "localhost");
     port = dialog.portEdit->text().toInt();
 
     if (strlen(pseudo) > 30)
@@ -214,6 +226,50 @@ int copier_chaine(char *dest, const char *src, int debut, int longueur)
 
     // On retourne l'indice courant de la chaine afin de pouvoir la retraiter sans repartir du début.
     return i;
+}
+
+
+void trouver_ip(char ip[TAILLE_MAX])
+{
+	int s;
+	struct ifconf ifconf;
+	struct ifreq ifr[50];
+	int ifs;
+	int i;
+
+	s = socket(AF_INET, SOCK_STREAM, 0);
+	if (s < 0) 
+	{
+		perror("socket");
+		return 0;
+	}
+
+	ifconf.ifc_buf = (char *) ifr;
+	ifconf.ifc_len = sizeof ifr;
+
+	if (ioctl(s, SIOCGIFCONF, &ifconf) == -1)
+	{
+		perror("ioctl");
+		return 0;
+	}
+
+	ifs = ifconf.ifc_len / sizeof(ifr[0]);
+	for (i = 0; i < ifs; i++) {
+		char ip_temp[INET_ADDRSTRLEN];
+		struct sockaddr_in *s_in = (struct sockaddr_in *) &ifr[i].ifr_addr;
+
+		if (!inet_ntop(AF_INET, &s_in->sin_addr, ip_temp, sizeof(ip_temp)))
+		{
+			perror("inet_ntop");
+			return 0;
+		}
+		if(strcmp(ifr[i].ifr_name, INTERFACE_UTILISEE) == 0 ) {
+			strcpy(ip, ip_temp);
+			printf("Adresse IP v4 sur l'interface %s trouvée : %s\n", ifr[i].ifr_name, ip);
+		}
+	}
+
+  close(s);
 }
 
 

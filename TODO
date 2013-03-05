@@ -2,10 +2,10 @@
 	Serveur :
 		- envoi des personnes connectées : soucis de chaine (NOTE : A priori c'est fait, à vérifier dans les faits le bon fonctionnement)
 		- Déconnexion de qqn : fermer son thread de lecture de la file de message (le thread continue, actuellement)
-		- timeout
+		- (timeout)
 		
 	Client :
-		- Important : trouver l'adresse IP locale pour l'envoyer au serveur (actuellement: localhost est envoyé)
+		- Important : trouver l'adresse IP locale pour l'envoyer au serveur (actuellement: localhost est envoyé) : IN PROGRESS
 		- fermeture des onglets
 		- Enlever les personnes déconnectées de la liste
 		- interdire pseudo déjà choisi + interdire caractères spéciaux
