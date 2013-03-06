@@ -65,8 +65,9 @@ int main(int argc, char *argv[])
 		return 0;
     }
 
-	// trouver l'adresse ip de la machine
 	/*
+	// trouver l'adresse ip de la machine
+	// Abandonné car trop contraignant pour l'utilisateur : demande de savoir l'interface sur laquelle on va se connecter
 	trouver_ip(ip);
 	printf("Utilisation de l'ip '%s'\n", ip);
 	*/

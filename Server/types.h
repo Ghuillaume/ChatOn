@@ -1,6 +1,9 @@
 #ifndef TYPES_H
 #define TYPES_H
 
+#include <pthread.h>
+
+
 #define LONGUEUR_MAX_PSEUDO 30
 #define LONGUEUR_MAX_IP 15
 #define LONGUEUR_MAX_MSG 500
@@ -8,6 +11,7 @@
 
 typedef struct utilisateur {
     char pseudo[LONGUEUR_MAX_PSEUDO + 1];
+    
     char ip[LONGUEUR_MAX_IP + 1];
     // minute du dernier échange avec le serveur
     int dernier_contact;
@@ -23,6 +27,7 @@ typedef struct message {
 typedef struct clientThreadArgs {
     int socket;
     utilisateur* user;
+    pthread_t linked_thread;
 } clientThreadArgs;
 
 #endif

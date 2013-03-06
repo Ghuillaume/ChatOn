@@ -73,6 +73,7 @@ int main(int argc, char** argv)
 	            adresse_client_courant;	/* adresse client courant */
 	            
 	pthread_t clientHandler;
+	pthread_t clientHandler2;
 	
 	hostent* ptr_hote;			/* les infos récupérées sur la machine hôte */
 	servent* ptr_service;			/* les infos récupérées sur le service de la machine */
@@ -125,20 +126,23 @@ int main(int argc, char** argv)
 		clientThreadArgs args;
 		args.socket = nouv_socket_descriptor;
 		args.user = initConnection(nouv_socket_descriptor);
-		
+		args.linked_thread = clientHandler2;
 		if(args.user == NULL) {
 			exit(1);
 		}
-		if (pthread_create(&clientHandler, NULL, protocoleEnvoi, (void*)&args) < 0)
-		{
-			perror("Sending thread problem\n");
-			exit(1);
-		} 
+		
 		if (pthread_create(&clientHandler, NULL, protocoleReception, (void*)&args) < 0)
 		{
 			perror("Receiving thread problem\n");
 			exit(1);
 		}
+		args.linked_thread = clientHandler;
+		if (pthread_create(&clientHandler2, NULL, protocoleEnvoi, (void*)&args) < 0)
+		{
+			perror("Sending thread problem\n");
+			exit(1);
+		} 
+
 	}
 	close(socket_descriptor);
 	free(liste_connectes);
