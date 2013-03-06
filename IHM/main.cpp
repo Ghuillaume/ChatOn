@@ -67,15 +67,17 @@ int main(int argc, char *argv[])
     }
 
 	// trouver l'adresse ip de la machine
+	/*
 	trouver_ip(ip);
 	printf("Utilisation de l'ip '%s'\n", ip);
+	*/
 
 	// Construire le message de présentation au serveur
     QByteArray temp = dialog.serverEdit->text().toLocal8Bit();
     strcpy(host, temp.data());
     temp = dialog.pseudoEdit->text().toLocal8Bit();
     strcpy(pseudo, temp.data());
-    //strcpy(ip, "localhost");
+    strcpy(ip, "localhost");
     port = dialog.portEdit->text().toInt();
 
     if (strlen(pseudo) > 30)
@@ -156,7 +158,7 @@ void readFromServ(void* arg) {
     int longueur;
 
     while(longueur = read(socket, buffIn, sizeof(buffIn)) && !sortie)
-    {
+    {   
         if(longueur <= 0)
         {
             perror("read error");
@@ -173,13 +175,14 @@ void readFromServ(void* arg) {
         else if(strncmp(buffIn, "connected:", 10) == 0)
         {
             char** splittedBuffer = split(buffIn, ":", 0);
-            w->addConnected(splittedBuffer[1]);
+            char** splittedNick = split(splittedBuffer[1], ";", 1);
+            w->addConnected(splittedNick[0]);
         }
         else if(strncmp(buffIn, "disconnected:", 13) == 0)
         {
-            char pseudo[TAILLE_MAX];
-            copier_chaine(pseudo, buffIn, 13, strlen(buffIn));
-            w->removeConnected(pseudo);
+            char** splittedBuffer = split(buffIn, ":", 0);
+            char** splittedNick = split(splittedBuffer[1], ";", 1);
+            w->removeConnected(splittedNick[0]);
         }
         else if(strncmp(buffIn, "welcome:", 8) == 0)
         {
@@ -205,7 +208,8 @@ void readFromServ(void* arg) {
         {
             // TODO
         }
-
+        
+    	// Nettoyage du buffer
         memset(buffIn, '\0', TAILLE_MAX);
     }
 

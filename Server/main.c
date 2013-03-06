@@ -156,7 +156,7 @@ utilisateur* initConnection(int socket)
 	int longueur;
 	longueur = read(socket, buffer, sizeof(buffer));
 	
-	printf("Receiving connection information from client : %s\n", buffer);
+	printf("Receiving connection information from client : '%s'\n", buffer);
 	
 	// Décrémente le nombre de slots disponibles sur le serveur
 	if (slots_serveurs_restants == 0)
@@ -214,6 +214,7 @@ utilisateur* initConnection(int socket)
 		{
 			strcpy(buffer,"connected:");
 			strcat(buffer, liste_connectes[i]->pseudo);
+			strcat(buffer, ";");
     		buffer[strlen(buffer)] = '\0';
 			write(socket, buffer, strlen(buffer));
 			write(socket, "\n", 1);
@@ -444,16 +445,18 @@ void protocoleEnvoi(void* arg)
 		if(toSend != NULL) {
 			
    			char message_complet[600] = "";
-			memset(message_complet, '\0', 600);
+			memset(message_complet, '\0', sizeof(message_complet));
 			
 			if(strcmp(toSend->msg->message, "/notifyConnection") == 0) {
 				strcpy(message_complet, "connected:");
-				strcat(message_complet, toSend->msg->source);		
+				strcat(message_complet, toSend->msg->source);
+				strcat(message_complet, ";");
 			}
 			
 			else if(strcmp(toSend->msg->message, "/notifyDisconnection") == 0) {
 				strcpy(message_complet, "disconnected:");
 				strcat(message_complet, toSend->msg->source);
+				strcat(message_complet, ";");
 			}
    			
 			// Private message "pv;pseudo_source;message"
