@@ -6,6 +6,8 @@ PrivateTab::PrivateTab(QWidget *parent, Window *mainWindow, QString pseudo) :
     this->mainWindow = mainWindow;
 
     this->pseudo = pseudo;
+
+    this->installEventFilter(this);
 }
 
 void PrivateTab::setObjects() {
@@ -24,8 +26,24 @@ void PrivateTab::setObjects() {
     QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(textEntered()));
 }
 
+bool PrivateTab::eventFilter(QObject *obj, QEvent *event)
+{
+    if(event->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if(keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return) // Entrée du pavé numérique ou classique
+        {
+            textEntered();
+            return true;
+        }
+    }
+    return false;
+}
+
 void PrivateTab::textEntered() {
     QString texte = this->inputText->toPlainText();
+
+    texte.remove('\n');
 
     if(!texte.isEmpty()) {
         this->inputText->clear();

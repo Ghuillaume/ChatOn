@@ -57,20 +57,19 @@ int main(int argc, char *argv[])
 	memset(pseudo, '\0', sizeof(pseudo));
 	memset(ip, '\0', sizeof(ip));
 
+    // trouver l'adresse ip de la machine
+    // Abandonné car trop contraignant pour l'utilisateur : demande de savoir l'interface sur laquelle on va se connecter
+    trouver_ip(ip);
+
     QApplication a(argc, argv);
-    ConnexionDialog dialog(0);
+    ConnexionDialog dialog(0, ip);
     dialog.exec();
 
     if(dialog.result() != QDialog::Accepted) {
         return 0;
     }
 
-    /*
-    // trouver l'adresse ip de la machine
-    // Abandonné car trop contraignant pour l'utilisateur : demande de savoir l'interface sur laquelle on va se connecter
-    trouver_ip(ip);
-    printf("Utilisation de l'ip '%s'\n", ip);
-    */
+
 
     // Construire le message de présentation au serveur
     QByteArray temp = dialog.serverEdit->text().toLocal8Bit();
@@ -177,18 +176,29 @@ void readFromServ(void* arg) {
             printf("Fin de connexion par le serveur, extinction.\n");
             return;
         }
-        else if(strncmp(buffIn, "connected:", 10) == 0)
+        else if(strncmp(buffIn, "here:", 10) == 0)
         {
-			printf("to split : '%s'\n", buffIn);
+			/*
             char** splittedBuffer = split(buffIn, ":", 0);
             char** splittedNick = split(splittedBuffer[1], ";", 1);
             int nb_personnes_connectees = sizeof(splittedNick) - 3;
-            printf("%d/%d personnes connectées\n", sizeof(splittedNick), nb_personnes_connectees);
             for(int i = 0 ; (i < nb_personnes_connectees) && (splittedNick[i] != NULL) ; i++) {
-				printf("\t\tsplitted : '%s'\n", splittedNick[i]);
                 w->addConnected(splittedNick[i]);
             }
-			printf("Test\n");
+            */
+            char** splittedBuffer = split(buffIn, ":", 0);
+            char** splittedNick = split(splittedBuffer[1], ";", 1);
+            for(int i = 0 ; splittedNick[i] != NULL ; i++) {
+                cout << splittedNick[i] << endl;
+                w->addConnected(splittedNick[i], false);
+            }
+        }
+        else if(strncmp(buffIn, "connected:", 10) == 0)
+        {
+            char** splittedBuffer = split(buffIn, ":", 0);
+            char** splittedNick = split(splittedBuffer[1], ";", 1);
+            w->addConnected(splittedNick[0], true);
+
         }
         else if(strncmp(buffIn, "disconnected:", 13) == 0)
         {
@@ -244,50 +254,66 @@ int copier_chaine(char *dest, const char *src, int debut, int longueur)
     return i;
 }
 
-/*
+
 // Trouver l'ip de la machine locale en fonction de l'argument INTERFACE_UTILISEE (exemple : eth0)
 void trouver_ip(char ip[TAILLE_MAX])
 {
-	int s;
-	struct ifconf ifconf;
-	struct ifreq ifr[50];
-	int ifs;
-	int i;
+    int s;
+    struct ifconf ifconf;
+    struct ifreq ifr[50];
+    int ifs;
+    int i;
 
-	s = socket(AF_INET, SOCK_STREAM, 0);
-	if (s < 0) 
-	{
-		perror("socket");
-		return 0;
-	}
+    char ipwlan[TAILLE_MAX] = "0";
+    char ipeth[TAILLE_MAX] = "0";
 
-	ifconf.ifc_buf = (char *) ifr;
-	ifconf.ifc_len = sizeof ifr;
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s < 0)
+    {
+        perror("socket");
+        return 0;
+    }
 
-	if (ioctl(s, SIOCGIFCONF, &ifconf) == -1)
-	{
-		perror("ioctl");
-		return 0;
-	}
+    ifconf.ifc_buf = (char *) ifr;
+    ifconf.ifc_len = sizeof ifr;
 
-	ifs = ifconf.ifc_len / sizeof(ifr[0]);
-	for (i = 0; i < ifs; i++) {
-		char ip_temp[INET_ADDRSTRLEN];
-		struct sockaddr_in *s_in = (struct sockaddr_in *) &ifr[i].ifr_addr;
+    if (ioctl(s, SIOCGIFCONF, &ifconf) == -1)
+    {
+        perror("ioctl");
+        return 0;
+    }
 
-		if (!inet_ntop(AF_INET, &s_in->sin_addr, ip_temp, sizeof(ip_temp)))
-		{
-			perror("inet_ntop");
-			return 0;
-		}
-		if(strcmp(ifr[i].ifr_name, INTERFACE_UTILISEE) == 0 ) {
-			strcpy(ip, ip_temp);
-			printf("Adresse IP v4 sur l'interface %s trouvée : %s\n", ifr[i].ifr_name, ip);
-		}
-	}
+    ifs = ifconf.ifc_len / sizeof(ifr[0]);
+    for (i = 0; i < ifs; i++) {
+        char ip_temp[INET_ADDRSTRLEN];
+        struct sockaddr_in *s_in = (struct sockaddr_in *) &ifr[i].ifr_addr;
+
+        if (!inet_ntop(AF_INET, &s_in->sin_addr, ip_temp, sizeof(ip_temp)))
+        {
+            perror("inet_ntop");
+            return 0;
+        }
+        if(strcmp(ifr[i].ifr_name, "eth0") == 0 ) {
+            strcpy(ipeth, ip_temp);
+            printf("Adresse IP v4 sur l'interface %s trouvée : %s\n", ifr[i].ifr_name, ipeth);
+        }
+        if(strcmp(ifr[i].ifr_name, "wlan0") == 0 ) {
+            strcpy(ipeth, ip_temp);
+            printf("Adresse IP v4 sur l'interface %s trouvée : %s\n", ifr[i].ifr_name, ipwlan);
+        }
+    }
+
+    if(strlen(ipwlan) < 5) {
+        cout << "eth0" << endl;
+        strcpy(ip, ipeth);
+    }
+    else {
+        cout << "wlan0" << endl;
+        strcpy(ip, ipwlan);
+    }
 
   close(s);
-} */
+}
 
 
 /********************************/

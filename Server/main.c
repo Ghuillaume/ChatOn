@@ -213,19 +213,21 @@ utilisateur* initConnection(int socket)
 	// Envoie la liste des pseudos des gens connectés au nouvel utilisateur
 	memset(buffer, '\0', TAILLE_MAX);
 	int i;
+	strcpy(buffer,"here:");
 	for(i = 0; i < NB_SLOTS_SERVEUR; i++)
 	{
 		if (liste_connectes[i] != NULL && liste_connectes[i]->pseudo != nouvel_utilisateur->pseudo)
 		{
-			strcpy(buffer,"connected:");
 			strcat(buffer, liste_connectes[i]->pseudo);
 			strcat(buffer, ";");
-    		buffer[strlen(buffer)] = '\0';
-   			printf("\t>>>>> Sending to %s : '%s'\n", nouvel_utilisateur->pseudo, buffer);
-			write(socket, buffer, strlen(buffer));
-			memset(buffer, '\0', TAILLE_MAX);
 		}
 	}
+	buffer[strlen(buffer)] = '\0';
+	if(strlen(buffer) > 6) {
+		printf("\t>>>>> Sending to %s : '%s'\n", nouvel_utilisateur->pseudo, buffer);
+		write(socket, buffer, strlen(buffer));
+	}
+	memset(buffer, '\0', TAILLE_MAX);
 	
 	
 	// Notification de connexion aux utilisateurs
@@ -418,7 +420,7 @@ void protocoleReception(void* arg)
 		}
 	
 	   		
-	   	fileDebug(file_message);
+	   	//fileDebug(file_message);
 	   	
 		memset(buffer, '\0', TAILLE_MAX);
 	}

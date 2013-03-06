@@ -70,6 +70,8 @@ Window::Window(QWidget *parent, int serverSocket, string pseudo) : QMainWindow(p
     QObject::connect(this, SIGNAL(destroyed()), this, SLOT(close()));
     QObject::connect(connectedPeople, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(newTab(QListWidgetItem*)));
     QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(textEntered()));
+
+    this->installEventFilter(this);
 }
 
 Window::~Window()
@@ -77,8 +79,12 @@ Window::~Window()
 
 }
 
-void Window::addConnected(string name) {
+void Window::addConnected(string name, bool isNew) {
     this->connectedPeople->insertItem(this->connectedPeople->count(), QString::fromUtf8(name.c_str()));
+
+    if(isNew) {
+        this->history->append(QString::fromStdString(name) + " a rejoint le chat");
+    }
 
     QString nb = QString::number(this->connectedPeople->count());
     nb += QString::fromUtf8(" personnes connectées");
@@ -90,6 +96,8 @@ void Window::removeConnected(string name) {
         if(this->connectedPeople->item(i)->text().toStdString() == name)
             this->connectedPeople->takeItem(i);
     }
+
+    this->history->append(QString::fromStdString(name) + " a quitté le chat");
 
     QString nb = QString::number(this->connectedPeople->count());
     nb += QString::fromUtf8(" personnes connectées");
@@ -113,8 +121,24 @@ void Window::newTab(QListWidgetItem* itemClicked) {
 
 }
 
+bool Window::eventFilter(QObject *obj, QEvent *event)
+{
+    if(event->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if(keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return) // Entrée du pavé numérique ou classique
+        {
+            textEntered();
+            return true;
+        }
+    }
+    return false;
+}
+
 void Window::textEntered() {
     QString texte = this->inputText->toPlainText();
+
+    texte.remove('\n');
 
     if(!texte.isEmpty()) {
         this->inputText->clear();
