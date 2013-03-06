@@ -17,21 +17,23 @@ class ConnexionDialog: public QDialog
     Q_OBJECT
 
     public:
-        ConnexionDialog(QWidget *parent);
+        ConnexionDialog(QWidget *parent, char* ip);
        ~ConnexionDialog();
 
         QWidget *formLayoutWidget;
         QFormLayout *formLayout;
         
         QDialogButtonBox *buttonBox;
-        
+
         QLineEdit* pseudoEdit;
+        QLineEdit* ipEdit;
         QLineEdit* serverEdit;
         QLineEdit* portEdit;
 
     private:
 
-		QLabel* pseudoLabel;
+        QLabel* pseudoLabel;
+        QLabel* ipLabel;
 		QLabel* serverLabel;
 		QLabel* portLabel;
 		

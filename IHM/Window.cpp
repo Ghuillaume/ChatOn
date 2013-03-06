@@ -70,6 +70,8 @@ Window::Window(QWidget *parent, int serverSocket, string pseudo) : QMainWindow(p
     QObject::connect(this, SIGNAL(destroyed()), this, SLOT(close()));
     QObject::connect(connectedPeople, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(newTab(QListWidgetItem*)));
     QObject::connect(sendButton, SIGNAL(clicked()), this, SLOT(textEntered()));
+
+    this->installEventFilter(this);
 }
 
 Window::~Window()
@@ -113,8 +115,24 @@ void Window::newTab(QListWidgetItem* itemClicked) {
 
 }
 
+bool Window::eventFilter(QObject *obj, QEvent *event)
+{
+    if(event->type() == QEvent::KeyRelease)
+    {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        if(keyEvent->key() == Qt::Key_Enter || keyEvent->key() == Qt::Key_Return) // Entrée du pavé numérique ou classique
+        {
+            textEntered();
+            return true;
+        }
+    }
+    return false;
+}
+
 void Window::textEntered() {
     QString texte = this->inputText->toPlainText();
+
+    texte.remove('\n');
 
     if(!texte.isEmpty()) {
         this->inputText->clear();

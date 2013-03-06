@@ -73,6 +73,7 @@ class Window : public QMainWindow
         void textEntered();
         void close();
         void closeEvent(QCloseEvent *event);
+        bool eventFilter(QObject *obj, QEvent *event);
 };
 
 #endif // WINDOW_HPP

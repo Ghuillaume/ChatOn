@@ -8,6 +8,7 @@
 #include <QListWidget>
 #include <QLabel>
 #include <QPushButton>
+#include <QKeyEvent>
 
 #include <string>
 #include <iostream>
@@ -52,6 +53,7 @@ class PrivateTab : public QWidget
 
     public slots:
         void textEntered();
+        bool eventFilter(QObject *obj, QEvent *event);
     
 };
 
