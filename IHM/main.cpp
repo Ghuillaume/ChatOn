@@ -179,14 +179,16 @@ void readFromServ(void* arg) {
         }
         else if(strncmp(buffIn, "connected:", 10) == 0)
         {
-            char** splittedBuffer = split(buffIn, ";", 0);
-            for(int i = 0 ; splittedBuffer[i] != NULL ; i++) {
-
-                char** splittedMessage = split(splittedBuffer[i], ":", 0);
-                char** splittedNick = split(splittedMessage[1], ";", 1);
-                w->addConnected(splittedNick[0]);
+			printf("to split : '%s'\n", buffIn);
+            char** splittedBuffer = split(buffIn, ":", 0);
+            char** splittedNick = split(splittedBuffer[1], ";", 1);
+            int nb_personnes_connectees = sizeof(splittedNick) - 3;
+            printf("%d/%d personnes connectées\n", sizeof(splittedNick), nb_personnes_connectees);
+            for(int i = 0 ; (i < nb_personnes_connectees) && (splittedNick[i] != NULL) ; i++) {
+				printf("\t\tsplitted : '%s'\n", splittedNick[i]);
+                w->addConnected(splittedNick[i]);
             }
-
+			printf("Test\n");
         }
         else if(strncmp(buffIn, "disconnected:", 13) == 0)
         {

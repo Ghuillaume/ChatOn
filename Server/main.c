@@ -136,6 +136,7 @@ int main(int argc, char** argv)
 			perror("Receiving thread problem\n");
 			exit(1);
 		}
+		
 		args.linked_thread = clientHandler;
 		if (pthread_create(&clientHandler2, NULL, protocoleEnvoi, (void*)&args) < 0)
 		{
@@ -306,7 +307,9 @@ void protocoleReception(void* arg)
 				if(liste_connectes[i] != NULL) {
 			
 					// On ajoute pour tout le monde sauf celui qui a envoyé le message
-					if(strcmp(currentUser->pseudo, liste_connectes[i]->pseudo) != 0) {
+					if(strcmp(currentUser->pseudo, liste_connectes[i]->pseudo) != 0)
+					{
+						printf("%s supprimé !\n", currentUser->pseudo);
 						msg[i] = malloc(sizeof(message));
 						if (msg[i] == NULL)
 						{
@@ -320,16 +323,25 @@ void protocoleReception(void* arg)
 						strcpy(msg[i]->message, "/notifyDisconnection");
 						msg[i]->forAll = 1;
 	
+						printf("test\n");
+						
 						// On verrouille la file de messsage globale, on ajoute le message et on déverrouille
 			   			pthread_mutex_lock(&mutex_file);
 						push(file_message, msg[i]);
 			   			pthread_mutex_unlock(&mutex_file);
+			   			
+						printf("test2\n");
+						// On supprime l'utilisateur pour libérer la place
+			   			liste_connectes[i] = NULL;
+						currentUser = NULL;
+						clientConnected = 0;
+						pthread_cancel(tmp->linked_thread);
+						
+						printf("test3\n");
 			   		}
 		   		}
 		   		i++;
 			}
-			// On supprime l'utilisateur pour libérer la place
-			currentUser = NULL;
 		}
 		else if (strncmp(buffer, "/msg", 4) == 0)
 		{
