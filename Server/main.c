@@ -221,7 +221,7 @@ utilisateur* initConnection(int socket)
 			strcat(buffer, ";");
     		buffer[strlen(buffer)] = '\0';
 			write(socket, buffer, strlen(buffer));
-			write(socket, "\n", 1);
+			//write(socket, "\n", 1);
 			memset(buffer, '\0', TAILLE_MAX);
 		}
 	}

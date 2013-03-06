@@ -58,26 +58,26 @@ int main(int argc, char *argv[])
 	memset(ip, '\0', sizeof(ip));
 
     QApplication a(argc, argv);
-	ConnexionDialog dialog(0);
-	dialog.exec();
-	
-	if(dialog.result() != QDialog::Accepted) {
-		return 0;
+    ConnexionDialog dialog(0);
+    dialog.exec();
+
+    if(dialog.result() != QDialog::Accepted) {
+        return 0;
     }
 
-	/*
-	// trouver l'adresse ip de la machine
-	// Abandonné car trop contraignant pour l'utilisateur : demande de savoir l'interface sur laquelle on va se connecter
-	trouver_ip(ip);
-	printf("Utilisation de l'ip '%s'\n", ip);
-	*/
+    /*
+    // trouver l'adresse ip de la machine
+    // Abandonné car trop contraignant pour l'utilisateur : demande de savoir l'interface sur laquelle on va se connecter
+    trouver_ip(ip);
+    printf("Utilisation de l'ip '%s'\n", ip);
+    */
 
-	// Construire le message de présentation au serveur
+    // Construire le message de présentation au serveur
     QByteArray temp = dialog.serverEdit->text().toLocal8Bit();
     strcpy(host, temp.data());
     temp = dialog.pseudoEdit->text().toLocal8Bit();
     strcpy(pseudo, temp.data());
-    memset(temp, '\0', sizeof(temp));
+    temp.clear();
     temp = dialog.serverEdit->text().toLocal8Bit();
     strncpy(ip, temp.data(), sizeof(ip)-1);
     ip[sizeof(ip)-1] = '\0';
@@ -179,9 +179,14 @@ void readFromServ(void* arg) {
         }
         else if(strncmp(buffIn, "connected:", 10) == 0)
         {
-            char** splittedBuffer = split(buffIn, ":", 0);
-            char** splittedNick = split(splittedBuffer[1], ";", 1);
-            w->addConnected(splittedNick[0]);
+            char** splittedBuffer = split(buffIn, ";", 0);
+            for(int i = 0 ; splittedBuffer[i] != NULL ; i++) {
+
+                char** splittedMessage = split(splittedBuffer[i], ":", 0);
+                char** splittedNick = split(splittedMessage[1], ";", 1);
+                w->addConnected(splittedNick[0]);
+            }
+
         }
         else if(strncmp(buffIn, "disconnected:", 13) == 0)
         {
@@ -293,48 +298,49 @@ void trouver_ip(char ip[TAILLE_MAX])
 // vide : 0 : on n'accepte pas les chaines vides
 // 1 : on accepte les chaines vides
 char** split(char* chaine,const char* delim,int vide){
-char** tab=NULL; //tableau de chaine, tableau resultat
-char *ptr; //pointeur sur une partie de
-int sizeStr; //taille de la chaine à recupérer
-int sizeTab=0; //taille du tableau de chaine
-char* largestring; //chaine à traiter
-int sizeDelim=strlen(delim); //taille du delimiteur
-largestring = chaine; //comme ca on ne modifie pas le pointeur d'origine
-//(faut ke je verifie si c bien nécessaire)
-while( (ptr=strstr(largestring, delim))!=NULL ){
-sizeStr=ptr-largestring;
-//si la chaine trouvé n'est pas vide ou si on accepte les chaine vide
-if(vide==1 || sizeStr!=0){
-//on alloue une case en plus au tableau de chaines
-sizeTab++;
-tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
-//on alloue la chaine du tableau
-tab[sizeTab-1]=(char*) malloc( sizeof(char)*(sizeStr+1) );
-strncpy(tab[sizeTab-1],largestring,sizeStr);
-tab[sizeTab-1][sizeStr]='\0';
-}
-//on decale le pointeur largestring pour continuer la boucle apres le premier elément traiter
-ptr=ptr+sizeDelim;
-largestring=ptr;
-}
-//si la chaine n'est pas vide, on recupere le dernier "morceau"
-if(strlen(largestring)!=0){
-sizeStr=strlen(largestring);
-sizeTab++;
-tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
-tab[sizeTab-1]=(char*) malloc( sizeof(char)*(sizeStr+1) );
-strncpy(tab[sizeTab-1],largestring,sizeStr);
-tab[sizeTab-1][sizeStr]='\0';
-}
-else if(vide==1){ //si on fini sur un delimiteur et si on accepte les mots vides,on ajoute un mot vide
-sizeTab++;
-tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
-tab[sizeTab-1]=(char*) malloc( sizeof(char)*1 );
-tab[sizeTab-1][0]='\0';
-}
-//on ajoute une case à null pour finir le tableau
-sizeTab++;
-tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
-tab[sizeTab-1]=NULL;
-return tab;
+    char** tab=NULL; //tableau de chaine, tableau resultat
+    char *ptr; //pointeur sur une partie de
+    int sizeStr; //taille de la chaine à recupérer
+    int sizeTab=0; //taille du tableau de chaine
+    char* largestring; //chaine à traiter
+    int sizeDelim=strlen(delim); //taille du delimiteur
+    largestring = chaine; //comme ca on ne modifie pas le pointeur d'origine
+
+    while( (ptr=strstr(largestring, delim))!=NULL ){
+        sizeStr=ptr-largestring;
+        //si la chaine trouvé n'est pas vide ou si on accepte les chaine vide
+        if(vide==1 || sizeStr!=0){
+            //on alloue une case en plus au tableau de chaines
+            sizeTab++;
+            tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
+            //on alloue la chaine du tableau
+            tab[sizeTab-1]=(char*) malloc( sizeof(char)*(sizeStr+1) );
+            strncpy(tab[sizeTab-1],largestring,sizeStr);
+            tab[sizeTab-1][sizeStr]='\0';
+        }
+        //on decale le pointeur largestring pour continuer la boucle apres le premier elément traiter
+        ptr=ptr+sizeDelim;
+        largestring=ptr;
+    }
+    //si la chaine n'est pas vide, on recupere le dernier "morceau"
+    if(strlen(largestring)!=0){
+        sizeStr=strlen(largestring);
+        sizeTab++;
+        tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
+        tab[sizeTab-1]=(char*) malloc( sizeof(char)*(sizeStr+1) );
+        strncpy(tab[sizeTab-1],largestring,sizeStr);
+        tab[sizeTab-1][sizeStr]='\0';
+    }
+    else if(vide==1){ //si on fini sur un delimiteur et si on accepte les mots vides,on ajoute un mot vide
+        sizeTab++;
+        tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
+        tab[sizeTab-1]=(char*) malloc( sizeof(char)*1 );
+        tab[sizeTab-1][0]='\0';
+    }
+    //on ajoute une case à null pour finir le tableau
+    sizeTab++;
+    tab= (char**) realloc(tab,sizeof(char*)*sizeTab);
+    tab[sizeTab-1]=NULL;
+
+    return tab;
 }

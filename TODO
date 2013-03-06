@@ -1,10 +1,10 @@
 
 	Serveur :
 		- Déconnexion de qqn : fermer son thread de lecture de la file de message (le thread continue, actuellement)
+		- Quand qqn se déco, il reste actif. On le voit si on connecte un client A après avoir fermé le client B (A recoit comme notification que B est connecté)
 		
 	Client :
 		- fermeture des onglets
-		- Enlever les personnes déconnectées de la liste
 		- interdire pseudo déjà choisi + interdire caractères spéciaux
 		- Réception d'un PV : fail si onglet pas déjà ouvert (parfois fail meme si onglet ouvert)
 		- Connexion impossible -> redemander l'IP
