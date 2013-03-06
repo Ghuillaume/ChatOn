@@ -28,7 +28,6 @@ utilisateur** liste_connectes;
 utilisateur* utilisateur_par_defaut;
 File *file_message;
 pthread_mutex_t mutex_file = PTHREAD_MUTEX_INITIALIZER;
-//TODO : mutex pour la liste des utilisateurs et le nombre de slots restants sur le serveur
 
 // Threads de communication avec le client
 void protocoleReception(void* arg);

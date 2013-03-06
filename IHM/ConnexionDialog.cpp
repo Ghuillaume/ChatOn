@@ -82,8 +82,20 @@ ConnexionDialog::~ConnexionDialog()
 }
 
 void ConnexionDialog::checkFields() {
-    /*if(intituleEdit->text().isEmpty())
-        QMessageBox::warning(this, "Erreur", "Prout");
-    else*/
+
+    if(pseudoEdit->text().length() < 2) {
+        QMessageBox::warning(this, "Erreur", QString::fromUtf8("Votre pseudo doit contenir au moins 2 caractères"), QMessageBox::Ok);
+    }
+    else if(ipEdit->text().isEmpty()) {
+        QMessageBox::warning(this, "Erreur", QString::fromUtf8("Veuillez spécifier votre adresse IP"), QMessageBox::Ok);
+    }
+    else if(portEdit->text().isEmpty()) {
+        QMessageBox::warning(this, "Erreur", QString::fromUtf8("Veuillez spécifier le port distant"), QMessageBox::Ok);
+    }
+    else if(serverEdit->text().isEmpty()) {
+        QMessageBox::warning(this, "Erreur", QString::fromUtf8("Veuillez spécifier l'adresse du serveur distant"), QMessageBox::Ok);
+    }
+    else {
         emit acceptedAndOk();
+    }
 }

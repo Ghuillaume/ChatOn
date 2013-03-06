@@ -28,6 +28,8 @@ int push(File* file, message *msg)
 	file->fin = toPush;
 	file->taille++;
 	
+	//printf("Pushed : %s\n", toPush->msg->message);
+	
 	return 0;
 }
 

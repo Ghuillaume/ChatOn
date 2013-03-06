@@ -179,7 +179,6 @@ void readFromServ(void* arg) {
         else if(strncmp(buffIn, "here:", 5) == 0)
         {
             char** splittedBuffer = split(buffIn, ":", 0);
-            cout << splittedBuffer[1] << endl;
             char** splittedNick = split(splittedBuffer[1], ";", 1);
             for(int i = 0 ; splittedNick[i] != NULL ; i++) {
                 w->addConnected(splittedNick[i], false);

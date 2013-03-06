@@ -9,6 +9,7 @@
 #include <QLineEdit>
 #include <QLabel>
 #include <QDialogButtonBox>
+#include <QMessageBox>
 
 using namespace std;
 
