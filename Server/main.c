@@ -160,7 +160,7 @@ utilisateur* initConnection(int socket)
 	int longueur;
 	longueur = read(socket, buffer, sizeof(buffer));
 	
-	printf("Receiving connection information from client : '%s'\n", buffer);
+	printf("\t<<<<< Receiving connection information from client : '%s'\n", buffer);
 	
 	// Décrémente le nombre de slots disponibles sur le serveur
 	if (slots_serveurs_restants == 0)
@@ -220,8 +220,8 @@ utilisateur* initConnection(int socket)
 			strcat(buffer, liste_connectes[i]->pseudo);
 			strcat(buffer, ";");
     		buffer[strlen(buffer)] = '\0';
+   			printf("\t>>>>> Sending to %s : '%s'\n", nouvel_utilisateur->pseudo, buffer);
 			write(socket, buffer, strlen(buffer));
-			//write(socket, "\n", 1);
 			memset(buffer, '\0', TAILLE_MAX);
 		}
 	}
@@ -289,7 +289,7 @@ void protocoleReception(void* arg)
 			return;
 		}
 	
-		printf("Socket from %s received : %s\n", currentUser->pseudo, buffer);
+		printf("\t<<<<< Received from %s : %s\n", currentUser->pseudo, buffer);
 	
 		// On traite les messages en fonction des mots-clés (/quit, /msg, ...)
 		if (strncmp(buffer, "/quit", 4) == 0)
@@ -481,7 +481,7 @@ void protocoleEnvoi(void* arg)
    				strcat(message_complet, toSend->msg->message);
    			}
 			
-   			printf("Sending to %s : '%s'\n", utilisateur_courant->pseudo, message_complet);
+   			printf("\t>>>>> Sending to %s : '%s'\n", utilisateur_courant->pseudo, message_complet);
 			write(socket, message_complet, strlen(message_complet));
 			
 			// Libération mémoire
