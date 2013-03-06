@@ -18,7 +18,6 @@
 
 //#include "../tools/common.h"
 
-#define INTERFACE_UTILISEE "eth0"
 #define TAILLE_MAX 257
 #define DELIM_PV ";"
 
@@ -77,7 +76,12 @@ int main(int argc, char *argv[])
     strcpy(host, temp.data());
     temp = dialog.pseudoEdit->text().toLocal8Bit();
     strcpy(pseudo, temp.data());
-    strcpy(ip, "localhost");
+    memset(temp, '\0', sizeof(temp));
+    temp = dialog.serverEdit->text().toLocal8Bit();
+    strncpy(ip, temp.data(), sizeof(ip)-1);
+    ip[sizeof(ip)-1] = '\0';
+    //strcpy(ip, "localhost");
+    //printf("ip : '%s'\n", ip);
     port = dialog.portEdit->text().toInt();
 
     if (strlen(pseudo) > 30)
@@ -232,7 +236,8 @@ int copier_chaine(char *dest, const char *src, int debut, int longueur)
     return i;
 }
 
-
+/*
+// Trouver l'ip de la machine locale en fonction de l'argument INTERFACE_UTILISEE (exemple : eth0)
 void trouver_ip(char ip[TAILLE_MAX])
 {
 	int s;
@@ -274,7 +279,7 @@ void trouver_ip(char ip[TAILLE_MAX])
 	}
 
   close(s);
-}
+} */
 
 
 /********************************/
