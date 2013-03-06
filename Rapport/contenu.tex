@@ -13,12 +13,51 @@
 		
 
 	\section{Présentation des fonctionnalités}
+		- salon général
+		- messages privés
+		
 
 \chapter{Fonctionnement du Chat}
 	
 	\section{Présentation du protocole}
+		Parce qu'un schéma est plus parlant qu'un long discours, commençons par une présentation du protocole sous la forme d'un diagramme de séquence. Il est important de rappeler que comme toute architecture client/serveur, le client envoie des requêtes (ici sous la forme de messages) au serveur qui lui s'occupe d'agit en conséquence.
+		\begin{figure}[h!]
+			\centering
+			\includegraphics[scale=0.45]{protocol.png}
+			\caption{Présentation générale du protocole utilisé}
+		\end{figure}
+		\FloatBarrier
+		
+		L'entité \emph{Client} représente le client à partir duquel nous présentons notre protocole. C'est cette entité qui envoie les requêtes au serveur. Étant donné que le serveur est un intermédiaire entre plusieurs clients, nous avions besoin d'une autre entité. L'entité \emph{Autres Clients} représente donc les autres clients connectés au serveur, clients que nous n'étudions pas (un seul suffit à comprendre les spécifications du protocole) mais qui nous sert ici à montrer à quels moments les messages envoyés par \emph{Client} sont retransmis.\\
+		
+		Nous remarquons ici qu'une fois la connexion initialisée (le client et le serveur se connaissent et le serveur est prêt à écouter), le client n'a que trois possibilités :
+		\begin{itemize}
+			\item Engager une conversation dans le salon général ;
+			\item Engager une conversation privée ;
+			\item Se déconnecter.
+		\end{itemize}
+		
+		Le protocole est donc très simple. Mais l'implémentation l'est moins du fait que le serveur doive pouvoir gérer plusieurs clients simultannément. Nous détaillerons donc le fonctionnement du serveur dans le chapitre suivant.
+		
 	
 	\section{Fonctionnement du serveur}
+		
+		Côté serveur, il nous a paru évident qu'il faille implémenter une file de messages à envoyer. Pour utiliser cette file correctement, nous avons donc besoin de deux threads par client : un thread qui scrute la réception des requêtes du client et qui agit en conséquence, ainsi qu'un thread qui parcourt constamment la file de message afin de récupérer les messages à envoyer au client pour les retransmettre ensuite.
+	
+		\subsection{Liste des utilisateurs connectés}
+			détails de l'implémentation + quand est-ce qu'elle est mise à jour ?
+			
+		\subsection{File de messages}
+			idem\\
+			ne pas oublier de préciser la méthode de "pop"\\
+			ne pas oublier de parler du mutex
+			
+		\subsection{Thread de lecture}
+			se présente sous la forme d'un protocole (1 string = 1 action)
+			
+		\subsection{Thread d'écriture}
+			idem
+			
 	
 	\section{Fonctionnement du client}
 		\subsection{Le coeur de l'application}

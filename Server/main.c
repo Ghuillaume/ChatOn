@@ -256,6 +256,8 @@ utilisateur* initConnection(int socket)
 	   			pthread_mutex_lock(&mutex_file);
 				push(file_message, msg[i]);
 	   			pthread_mutex_unlock(&mutex_file);
+	   			
+	   			//fileDebug(file_message);
 	   		}
    		}
    		i++;

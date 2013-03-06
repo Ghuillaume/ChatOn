@@ -1,0 +1,23 @@
+Client -> Serveur : Envoi des informations (<pseudo>;<ip_client>)
+Serveur -> Serveur : Initialisation de la connexion
+Serveur -> Client : Envoi de la liste des utilisateurs connectés (<here>:<pseudo1>;<pseudo2>;.....)
+Serveur -> "Autres Clients" : Envoi d'une notification de connexion (connected:<pseudo>)
+
+alt Envoi d'un message à tous
+    Client -> Serveur : /all <message>
+    Client -> Client : affichage du message dans le salon principal
+    Serveur -> "Autres Clients" : renvoi du message à tous les clients (all:<source>;<message>)
+    "Autres Clients" -> "Autres Clients" : affichage du message
+
+else Envoi d'un message privé
+    Client -> Serveur : /msg <pseudo_destinataire> <message>
+    Client -> Client : affichage du message dans un onglet privé
+    Serveur -> "Autres Clients" : renvoi du message au destinataire (pv:<source>;<message>)
+    "Autres Clients" -> "Autres Clients" : affichage du message
+
+else Déconnexion
+    Client -> Serveur : /quit
+    Serveur -> "Autres Clients" : Envoi d'une notification de déconnexion (disconnected:<pseudo>)
+    Serveur -> Serveur : Fermeture de la connexion
+
+end
