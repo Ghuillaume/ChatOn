@@ -176,20 +176,12 @@ void readFromServ(void* arg) {
             printf("Fin de connexion par le serveur, extinction.\n");
             return;
         }
-        else if(strncmp(buffIn, "here:", 10) == 0)
+        else if(strncmp(buffIn, "here:", 5) == 0)
         {
-			/*
             char** splittedBuffer = split(buffIn, ":", 0);
-            char** splittedNick = split(splittedBuffer[1], ";", 1);
-            int nb_personnes_connectees = sizeof(splittedNick) - 3;
-            for(int i = 0 ; (i < nb_personnes_connectees) && (splittedNick[i] != NULL) ; i++) {
-                w->addConnected(splittedNick[i]);
-            }
-            */
-            char** splittedBuffer = split(buffIn, ":", 0);
+            cout << splittedBuffer[1] << endl;
             char** splittedNick = split(splittedBuffer[1], ";", 1);
             for(int i = 0 ; splittedNick[i] != NULL ; i++) {
-                cout << splittedNick[i] << endl;
                 w->addConnected(splittedNick[i], false);
             }
         }
