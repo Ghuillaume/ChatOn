@@ -39,7 +39,7 @@ class Window : public QMainWindow
         explicit Window(QWidget *parent = 0, int serverSocket = 0, string pseudo = "Guest");
 		~Window();
 
-        void addConnected(string name);
+        void addConnected(string name, bool isNew);
         void removeConnected(string name);
 
         void sendText(QString text, string dest = "");

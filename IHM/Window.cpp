@@ -79,8 +79,12 @@ Window::~Window()
 
 }
 
-void Window::addConnected(string name) {
+void Window::addConnected(string name, bool isNew) {
     this->connectedPeople->insertItem(this->connectedPeople->count(), QString::fromUtf8(name.c_str()));
+
+    if(isNew) {
+        this->history->append(QString::fromStdString(name) + " a rejoint le chat");
+    }
 
     QString nb = QString::number(this->connectedPeople->count());
     nb += QString::fromUtf8(" personnes connectées");
@@ -92,6 +96,8 @@ void Window::removeConnected(string name) {
         if(this->connectedPeople->item(i)->text().toStdString() == name)
             this->connectedPeople->takeItem(i);
     }
+
+    this->history->append(QString::fromStdString(name) + " a quitté le chat");
 
     QString nb = QString::number(this->connectedPeople->count());
     nb += QString::fromUtf8(" personnes connectées");
