@@ -191,6 +191,7 @@ void Window::receiveText(const char *msg, const char *pseudo, bool isPrivate) {
 
         if(!tabFound) {
             // Création d'un nouvel onglet
+			
             PrivateTab* tab = new PrivateTab(tabWidget, this, stringPseudo);
             tab->setObjectName(QString::fromUtf8("tab"));
             tabWidget->addTab(tab, QString());

@@ -28,7 +28,7 @@ int push(File* file, message *msg)
 	file->fin = toPush;
 	file->taille++;
 	
-	printf("Pushed : %s\n", toPush->msg->message);
+	//printf("Pushed : %s\n", toPush->msg->message);
 	
 	return 0;
 }
@@ -68,7 +68,7 @@ Node* getFirstMessage(File* file, char* dest) {
 void fileDebug(File* file) {
 
 	if(file->taille < 0) {
-		printf("WTF ? Taille négative\n");
+		printf("Taille négative\n");
 	}
 	else if(file->taille >= 0) {
 		printf("File :\n");

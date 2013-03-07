@@ -179,14 +179,18 @@ void readFromServ(void* arg) {
             char** splittedBuffer = split(buffIn, ":", 0);
             char** splittedNick = split(splittedBuffer[1], ";", 1);
             for(int i = 0 ; splittedNick[i] != NULL ; i++) {
-                w->addConnected(splittedNick[i], false);
+            	if(strlen(splittedNick[i]) >= 3) {
+               		w->addConnected(splittedNick[i], false);
+               	}
             }
         }
         else if(strncmp(buffIn, "connected:", 10) == 0)
         {
             char** splittedBuffer = split(buffIn, ":", 0);
             char** splittedNick = split(splittedBuffer[1], ";", 1);
-            w->addConnected(splittedNick[0], true);
+        	if(strlen(splittedNick[0]) >= 3) {
+            	w->addConnected(splittedNick[0], true);
+           	}
 
         }
         else if(strncmp(buffIn, "disconnected:", 13) == 0)

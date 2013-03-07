@@ -221,7 +221,8 @@ utilisateur* initConnection(int socket)
 			strcat(buffer, ";");
 		}
 	}
-	buffer[strlen(buffer)] = '\0';
+	strcat(buffer, ":\0");
+	//buffer[strlen(buffer)] = '\0';
 	if(strlen(buffer) > 6) {
 		printf("\t>>>>> Sending to %s : '%s'\n", nouvel_utilisateur->pseudo, buffer);
 		write(socket, buffer, strlen(buffer));
@@ -262,8 +263,6 @@ utilisateur* initConnection(int socket)
    		}
    		i++;
 	}
-	
-	printf("Client initialized !!\n");
 	
 	return nouvel_utilisateur;
 	
@@ -325,22 +324,18 @@ void protocoleReception(void* arg)
 						strcpy(msg[i]->dest, liste_connectes[i]->pseudo);
 						strcpy(msg[i]->message, "/notifyDisconnection");
 						msg[i]->forAll = 1;
-	
-						printf("test\n");
 						
 						// On verrouille la file de messsage globale, on ajoute le message et on déverrouille
 			   			pthread_mutex_lock(&mutex_file);
 						push(file_message, msg[i]);
 			   			pthread_mutex_unlock(&mutex_file);
 			   			
-						printf("test2\n");
 						// On supprime l'utilisateur pour libérer la place
 			   			liste_connectes[i] = NULL;
 						currentUser = NULL;
 						clientConnected = 0;
 						pthread_cancel(tmp->linked_thread);
 						
-						printf("test3\n");
 			   		}
 		   		}
 		   		i++;
