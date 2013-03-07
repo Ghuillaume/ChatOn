@@ -39,10 +39,11 @@ Node* getFirstMessage(File* file, char* dest) {
 	Node* current = file->debut;
 	Node* previous = NULL;
 	
-	//printf("Looking for messages for %s\n", dest);
+	printf("Looking for messages for %s (len: %d) :\n", dest, strlen(dest));
 	
 	while(current != NULL) {
 	
+		printf("\tFound on message for %s (len: %d)\n", current->msg->dest, strlen(current->msg->dest));
 		if( strncmp(current->msg->dest, dest, strlen(dest)) == 0) {
 			
 			// Si on enlève le premier élément, on change le début de file
@@ -56,6 +57,8 @@ Node* getFirstMessage(File* file, char* dest) {
 			
 			file->taille--;
 			
+			printf("\t\tMessage is for %s, return %s.\n", dest, current->msg->message);
+			fileDebug(file);
 			return current;
 		}
 		
