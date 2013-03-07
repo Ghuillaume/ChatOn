@@ -1,0 +1,181 @@
+Initializing queue
+Pushed in queue : /notifyConnection
+		File (1) :
+			1. /notifyConnection(from BBB to AA)
+begin pop
+Found a message for AA, return /notifyConnection.
+end pop
+		File (0) :
+Pushed in queue : salut 
+		File (1) :
+			1. salut (from AA to BBB)
+begin pop
+Found a message for BBB, return salut .
+end pop
+		File (0) :
+Pushed in queue : /notifyConnection
+		File (1) :
+			1. /notifyConnection(from CCCC to AA)
+Pushed in queue : /notifyConnection
+		File (2) :
+			1. /notifyConnection(from CCCC to AA)
+			2. /notifyConnection(from CCCC to BBB)
+begin pop
+Found a message for BBB, return /notifyConnection.
+end pop
+		File (1) :
+			1. /notifyConnection(from CCCC to AA)
+begin pop
+Found a message for AA, return /notifyConnection.
+end pop
+		File (0) :
+Pushed in queue : /notifyConnection
+		File (1) :
+			1. /notifyConnection(from DDDDD to AA)
+Pushed in queue : /notifyConnection
+		File (2) :
+			1. /notifyConnection(from DDDDD to AA)
+			2. /notifyConnection(from DDDDD to BBB)
+Pushed in queue : /notifyConnection
+		File (3) :
+			1. /notifyConnection(from DDDDD to AA)
+			2. /notifyConnection(from DDDDD to BBB)
+			3. /notifyConnection(from DDDDD to CCCC)
+begin pop
+Found a message for BBB, return /notifyConnection.
+end pop
+		File (2) :
+			1. /notifyConnection(from DDDDD to AA)
+			2. /notifyConnection(from DDDDD to CCCC)
+begin pop
+Found a message for AA, return /notifyConnection.
+end pop
+		File (1) :
+			1. /notifyConnection(from DDDDD to CCCC)
+begin pop
+Found a message for CCCC, return /notifyConnection.
+end pop
+		File (0) :
+Pushed in queue : /notifyConnection
+		File (1) :
+			1. /notifyConnection(from EEEEEEE to AA)
+Pushed in queue : /notifyConnection
+		File (2) :
+			1. /notifyConnection(from EEEEEEE to AA)
+			2. /notifyConnection(from EEEEEEE to BBB)
+Pushed in queue : /notifyConnection
+		File (3) :
+			1. /notifyConnection(from EEEEEEE to AA)
+			2. /notifyConnection(from EEEEEEE to BBB)
+			3. /notifyConnection(from EEEEEEE to CCCC)
+Pushed in queue : /notifyConnection
+		File (4) :
+			1. /notifyConnection(from EEEEEEE to AA)
+			2. /notifyConnection(from EEEEEEE to BBB)
+			3. /notifyConnection(from EEEEEEE to CCCC)
+			4. /notifyConnection(from EEEEEEE to DDDDD)
+begin pop
+Found a message for BBB, return /notifyConnection.
+end pop
+		File (3) :
+			1. /notifyConnection(from EEEEEEE to AA)
+			2. /notifyConnection(from EEEEEEE to CCCC)
+			3. /notifyConnection(from EEEEEEE to DDDDD)
+begin pop
+Found a message for AA, return /notifyConnection.
+end pop
+		File (2) :
+			1. /notifyConnection(from EEEEEEE to CCCC)
+			2. /notifyConnection(from EEEEEEE to DDDDD)
+begin pop
+Found a message for CCCC, return /notifyConnection.
+end pop
+		File (1) :
+			1. /notifyConnection(from EEEEEEE to DDDDD)
+begin pop
+Found a message for DDDDD, return /notifyConnection.
+end pop
+		File (0) :
+Pushed in queue : Prout ! 
+		File (1) :
+			1. Prout ! (from EEEEEEE to AA)
+Pushed in queue : Prout ! 
+		File (2) :
+			1. Prout ! (from EEEEEEE to AA)
+			2. Prout ! (from EEEEEEE to BBB)
+Pushed in queue : Prout ! 
+		File (3) :
+			1. Prout ! (from EEEEEEE to AA)
+			2. Prout ! (from EEEEEEE to BBB)
+			3. Prout ! (from EEEEEEE to CCCC)
+Pushed in queue : Prout ! 
+		File (4) :
+			1. Prout ! (from EEEEEEE to AA)
+			2. Prout ! (from EEEEEEE to BBB)
+			3. Prout ! (from EEEEEEE to CCCC)
+			4. Prout ! (from EEEEEEE to DDDDD)
+begin pop
+Found a message for DDDDD, return Prout ! .
+end pop
+		File (3) :
+			1. Prout ! (from EEEEEEE to AA)
+			2. Prout ! (from EEEEEEE to BBB)
+			3. Prout ! (from EEEEEEE to CCCC)
+begin pop
+Found a message for BBB, return Prout ! .
+end pop
+		File (2) :
+			1. Prout ! (from EEEEEEE to AA)
+			2. Prout ! (from EEEEEEE to CCCC)
+begin pop
+Found a message for AA, return Prout ! .
+end pop
+		File (1) :
+			1. Prout ! (from EEEEEEE to CCCC)
+begin pop
+Found a message for CCCC, return Prout ! .
+end pop
+		File (0) :
+Pushed in queue : helooooooo 
+		File (1) :
+			1. helooooooo (from EEEEEEE to AA)
+Pushed in queue : helooooooo 
+		File (2) :
+			1. helooooooo (from EEEEEEE to AA)
+			2. helooooooo (from EEEEEEE to BBB)
+Pushed in queue : helooooooo 
+		File (3) :
+			1. helooooooo (from EEEEEEE to AA)
+			2. helooooooo (from EEEEEEE to BBB)
+			3. helooooooo (from EEEEEEE to CCCC)
+Pushed in queue : helooooooo 
+		File (4) :
+			1. helooooooo (from EEEEEEE to AA)
+			2. helooooooo (from EEEEEEE to BBB)
+			3. helooooooo (from EEEEEEE to CCCC)
+			4. helooooooo (from EEEEEEE to DDDDD)
+begin pop
+Found a message for BBB, return helooooooo .
+end pop
+		File (3) :
+			1. helooooooo (from EEEEEEE to AA)
+			2. helooooooo (from EEEEEEE to CCCC)
+			3. helooooooo (from EEEEEEE to DDDDD)
+begin pop
+Found a message for AA, return helooooooo .
+end pop
+		File (2) :
+			1. helooooooo (from EEEEEEE to CCCC)
+			2. helooooooo (from EEEEEEE to DDDDD)
+begin pop
+Found a message for CCCC, return helooooooo .
+end pop
+		File (1) :
+			1. helooooooo (from EEEEEEE to DDDDD)
+begin pop
+Found a message for DDDDD, return helooooooo .
+end pop
+		File (0) :
+Pushed in queue : /notifyDisconnection
+		File (1) :
+			1. /notifyDisconnection(from EEEEEEE to AA)

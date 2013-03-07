@@ -258,7 +258,6 @@ utilisateur* initConnection(int socket)
 				push(file_message, msg[i]);
 	   			pthread_mutex_unlock(&mutex_file);
 	   			
-	   			//fileDebug(file_message);
 	   		}
    		}
    		i++;
@@ -414,9 +413,6 @@ void protocoleReception(void* arg)
 		{
 			printf("Commande non reconnue.\n");
 		}
-	
-	   		
-	   	//fileDebug(file_message);
 	   	
 		memset(buffer, '\0', TAILLE_MAX);
 	}
