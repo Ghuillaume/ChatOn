@@ -97,7 +97,7 @@ void Window::removeConnected(string name) {
             this->connectedPeople->takeItem(i);
     }
 
-    this->history->append(QString::fromStdString(name) + " a quitté le chat");
+    this->history->append(QString::fromUtf8(name.c_str()) + " a quitté le chat");
 
     QString nb = QString::number(this->connectedPeople->count());
     nb += QString::fromUtf8(" personnes connectées");

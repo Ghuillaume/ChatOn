@@ -15,7 +15,7 @@
 
 #define	h_addr h_addr_list[0]
 #define TAILLE_MAX 256
-#define NB_SLOTS_SERVEUR 5
+#define NB_SLOTS_SERVEUR 10
 
 typedef struct sockaddr sockaddr;
 typedef struct sockaddr_in sockaddr_in;
@@ -243,7 +243,7 @@ utilisateur* initConnection(int socket)
 				if (msg[i] == NULL)
 				{
 					perror("malloc error");
-					return; // ignorer le message
+					return NULL; // ignorer le message
 				}
 	
 				// Découpage de la phrase et assemblage du message
@@ -281,7 +281,7 @@ void protocoleReception(void* arg)
 	int longueur;
 	
 	
-	printf("Reading thread %s initialized\n", currentUser);
+	printf("Reading thread %s initialized\n", currentUser->pseudo);
 	
 	int clientConnected = 1;
 	while(longueur = read(socket, buffer, sizeof(buffer)) && clientConnected)

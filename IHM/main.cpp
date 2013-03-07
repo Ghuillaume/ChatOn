@@ -44,11 +44,9 @@ void trouver_ip(char ip[TAILLE_MAX]);
 int main(int argc, char *argv[])
 {
 
-    int socket_descriptor, longueur; 	// descripteur de socket, longueur du buffer utilisé
+    int socket_descriptor; 	// descripteur de socket
     sockaddr_in adresse_locale; 			// adresse de socket local
     hostent *ptr_host; 						// info sur une machine hote
-    servent *ptr_service; 					// info  sur service
-    char buffer[TAILLE_MAX]; 								// nom du programme
     char host[TAILLE_MAX] = "";									// nom de la machine distante
     char pseudo[TAILLE_MAX] = "";
     char ip[TAILLE_MAX] = "";
@@ -105,7 +103,7 @@ int main(int argc, char *argv[])
     bcopy((char*)ptr_host->h_addr, (char*) &adresse_locale.sin_addr, ptr_host->h_length);
     adresse_locale.sin_family = AF_INET;
 
-    adresse_locale.sin_port = htons(5555);
+    adresse_locale.sin_port = htons(port);
 
     // Création du socket
     if ((socket_descriptor = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
@@ -161,7 +159,7 @@ void readFromServ(void* arg) {
 
     int longueur;
 
-    while(longueur = read(socket, buffIn, sizeof(buffIn)) && !sortie)
+    while((longueur = read(socket, buffIn, sizeof(buffIn))) && !sortie)
     {   
         if(longueur <= 0)
         {
@@ -262,7 +260,7 @@ void trouver_ip(char ip[TAILLE_MAX])
     if (s < 0)
     {
         perror("socket");
-        return 0;
+        return;
     }
 
     ifconf.ifc_buf = (char *) ifr;
@@ -271,7 +269,7 @@ void trouver_ip(char ip[TAILLE_MAX])
     if (ioctl(s, SIOCGIFCONF, &ifconf) == -1)
     {
         perror("ioctl");
-        return 0;
+        return;
     }
 
     ifs = ifconf.ifc_len / sizeof(ifr[0]);
@@ -282,7 +280,7 @@ void trouver_ip(char ip[TAILLE_MAX])
         if (!inet_ntop(AF_INET, &s_in->sin_addr, ip_temp, sizeof(ip_temp)))
         {
             perror("inet_ntop");
-            return 0;
+            return;
         }
         if(strcmp(ifr[i].ifr_name, "eth0") == 0 ) {
             strcpy(ipeth, ip_temp);
