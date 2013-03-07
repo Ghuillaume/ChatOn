@@ -144,8 +144,11 @@ int main(int argc, char** argv)
 		} 
 
 	}
+	
 	close(socket_descriptor);
+	free(file_message);
 	free(liste_connectes);
+	free(utilisateur_par_defaut);
 	
 	return EXIT_SUCCESS;
 }
@@ -310,7 +313,6 @@ void protocoleReception(void* arg)
 					// On ajoute pour tout le monde sauf celui qui a envoyé le message
 					if(strcmp(currentUser->pseudo, liste_connectes[i]->pseudo) != 0)
 					{
-						printf("%s supprimé !\n", currentUser->pseudo);
 						msg[i] = malloc(sizeof(message));
 						if (msg[i] == NULL)
 						{
@@ -328,14 +330,15 @@ void protocoleReception(void* arg)
 			   			pthread_mutex_lock(&mutex_file);
 						push(file_message, msg[i]);
 			   			pthread_mutex_unlock(&mutex_file);
-			   			
-						// On supprime l'utilisateur pour libérer la place
-			   			liste_connectes[i] = NULL;
-						currentUser = NULL;
-						clientConnected = 0;
-						pthread_cancel(tmp->linked_thread);
 						
 			   		}
+		   			// Celui qui a envoyé le message est supprimé
+			   		else {
+						printf("Suppression de %s\n", currentUser->pseudo);
+						pthread_cancel(tmp->linked_thread);
+			   			free(currentUser);
+						clientConnected = 0;
+					}
 		   		}
 		   		i++;
 			}
@@ -494,8 +497,6 @@ void protocoleEnvoi(void* arg)
 			free(toSend);
 			
 		}
-	
-		sleep(1);
 	}
 	printf("FIN DE LA CONNEXION\n");
 }
