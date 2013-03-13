@@ -10,11 +10,18 @@
 		Pour nous aider, nous avons bénéficié d'un exemple étudié en TP et qui montrait les fonctions principales d'envoi et de reception de messages, ainsi que la manière d'utiliser les threads pour paralléliser les tâches d'un programme. Cela permet de pouvoir écouter et émettre en continu pour chaque connexion établie.
 
 	\section{Choix du projet}
+		À titre personnel, nous avions déjà réfléchi au développement d'un système de messagerie instantannée en peer-to-peer\footnote{Pair à pair : modèle de transmission où chaque noeud du système peut être client et serveur. Exemple : Bittorrent} (P2P) complètement décentralisé et sécurisé. Le but est qu'un utilisateur ne soit pas dépendant du bon fonctionnement d'un serveur central.\\
+		
+		Nous avons donc choisi pour ce TP de développer une application de messagerie instantannée type IRC\footnote{Internet Relay Chat} sur le modèle Client-Serveur, ce qui pourrait servir de base pour notre projet personnel.
 		
 
 	\section{Présentation des fonctionnalités}
-		- salon général
-		- messages privés
+		Nous nous sommes inspiré du protocole IRC, ce qui nous a permi d'identifier les fonctionnalités suivantes :
+		\begin{itemize}
+			\item Salon général de discussion : un utilisateur communique avec tous les autres qui sont connectés au même moment ;
+			\item Messages privés : un utilisateur peut choisir de ne parler qu'à une personne à la fois sans que les autres ne puissent écouter ;
+			\item Commandes d'utilisations : \verb!\quit! pour quitter, \verb!\help! pour obtenir une documentation légère, etc...
+		\end{itemize}
 		
 
 \chapter{Fonctionnement du Chat}
@@ -42,15 +49,18 @@
 	
 	\section{Fonctionnement du serveur}
 		
-		Côté serveur, il nous a paru évident qu'il faille implémenter une file de messages à envoyer. Pour utiliser cette file correctement, nous avons donc besoin de deux threads par client : un thread qui scrute la réception des requêtes du client et qui agit en conséquence, ainsi qu'un thread qui parcourt constamment la file de message afin de récupérer les messages à envoyer au client pour les retransmettre ensuite.
+		Côté serveur, il nous a paru évident qu'il faille implémenter une file de messages à envoyer de manière à ce que la réception de données ne soit pas bloquante. Pour utiliser cette file correctement, nous avons donc besoin de deux threads par client : un thread qui scrute la réception des requêtes du client et qui agit en conséquence, ainsi qu'un thread qui parcourt constamment la file de message afin de récupérer les messages à envoyer au client pour les retransmettre ensuite.
 	
 		\subsection{Liste des utilisateurs connectés}
+			{\Huge TODO} \\
 			détails de l'implémentation + quand est-ce qu'elle est mise à jour ?
 			
 		\subsection{File de messages}
-			idem\\
-			ne pas oublier de préciser la méthode de "pop"\\
-			ne pas oublier de parler du mutex
+			La file de message est une structure C implémentée sous la forme d'une liste chainée. Chaque noeud contient plusieurs chaines de caractères décrivant le message à envoyer, l'expéditeur du message, ainsi que son destinataire.
+			
+			L'ajout d'un nouveau noeud s'effectue toujours à la fin de la file, de manière à pouvoir retourner le message le plus ancien le plus rapidement possible (envoyer le message le plus récent d'abord n'aurait pas de sens). Ainsi, la file est également dotée d'une fonction de défilage qui renvoie le premier message (donc le plus ancien) dont le destinataire correspond au thread qui demande un message pour son utilisateur.\\
+			
+			Cette file étant consultée et remplie par plusieurs threads à la fois, il est impératif de la protéger par un sémaphore d'exclusion mutuelle (mutex) qui la protège d'erreurs de pointeur (ajout dans la file alors qu'une opération sur les pointeurs est actuellement en cours, par exemple).
 			
 		\subsection{Thread de lecture}
 			se présente sous la forme d'un protocole (1 string = 1 action)
@@ -61,9 +71,29 @@
 	
 	\section{Fonctionnement du client}
 		\subsection{Le coeur de l'application}
+			Le client est constitué de trois fonctions principale.\\
+			
+			La première est celle de l'initialisation de la connexion. L'application demande des informations de connexion à l'utilisateur telles que le pseudo qu'il souhaite utiliser, son adresse IP (récupérée automatiquement mais dont on laisse la possibilité de modifier en cas d'erreur), ainsi que l'adresse IP et le port du serveur distant. Lorsque ces informations ont été récupérées, un paquet est forgé puis envoyé au serveur, qui va initialiser une connexion. Si quelque chose ne se passe pas correctement, l'application ferme en affichant un message d'erreur explicitant le problème.\\
+			
+			Dans le cas contraire, un FFFFRAIDE est créé. {\Huge TODO}\\
+			
+			La dernière fonction est l'affichage de l'interface graphique, ainsi que la communication entre cette interface et le thread de communication avec le serveur. Nous détaillons cette fonction dans la partie suivante.
 	
 	
 		\subsection{L'interface graphique}
+			Étant donné que nous avons déjà utilisé Pidgin\footnote{Logiciel de messagerie} et l'avons trouvé \emph{user-friendly} et plutôt simple dans sa conception, nous nous en sommes inspirés.\\
+			
+			Nous avons utilisé le framework Qt.\\
+			
+			L'interface graphique est ainsi composée de quatres éléments principaux :
+			\begin{itemize}
+				\item Tout en haut, des onglets. À l'ouverture de l'application, seul l'onglet correspondant au salon principal est ouvert. Il permet ensuite de naviguer entre les différentes conversations privées ouvertes ;
+				\item L'historique de conversation, qui domine la page ;
+				\item À droite, la liste des utilisateurs actuellement connectés au salon. Pour entamer une conversation privée avec l'un d'entre eux, il suffit de faire un double clic sur celui qui nous intéresse ;
+				\item En bas, un espace pour taper son message.
+			\end{itemize}
+			
+			
 			
 
 \chapter*{Conclusion}
