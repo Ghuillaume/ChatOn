@@ -27,10 +27,10 @@
 \chapter{Fonctionnement du Chat}
 	
 	\section{Présentation du protocole}
-		Parce qu'un schéma est plus parlant qu'un long discours, commençons par une présentation du protocole sous la forme d'un diagramme de séquence. Il est important de rappeler que comme toute architecture client/serveur, le client envoie des requêtes (ici sous la forme de messages) au serveur qui lui s'occupe d'agit en conséquence.
+		Parce qu'un schéma est plus parlant qu'un long discours, commençons par une présentation du protocole sous la forme d'un diagramme de séquence. Il est important de rappeler que comme toute architecture client/serveur, le client envoie des requêtes (ici sous la forme de messages) au serveur qui lui s'occupe d'agir en conséquence.
 		\begin{figure}[h!]
 			\centering
-			\includegraphics[scale=0.45]{protocol.png}
+			\includegraphics[scale=0.48]{protocol.png}
 			\caption{Présentation générale du protocole utilisé.}
 		\end{figure}
 		\FloatBarrier
@@ -73,12 +73,12 @@
 				\item \og disconnected;pseudonyme \fg pour les déconnexions.
 			\end{itemize}
 			
-			De cette manière, une chaîne de caractère correspond à une une action entre deux utilisateurs. Le message est ajoutée ensuite dans la liste avec le pseudo de l'expéditeur et du destinataire. Cependant, il est nécessaire de bloquer le sémaphore d'exclusion mutuelle pour ajouter afin d'éviter les écrasements de données ou autres conflits. 
+			De cette manière, une chaîne de caractère correspond à une action entre deux utilisateurs. Le message est ajoutée ensuite dans la liste avec le pseudo de l'expéditeur et du destinataire. Cependant, il est nécessaire de bloquer le sémaphore d'exclusion mutuelle pour ajouter afin d'éviter les écrasements de données ou autres conflits. 
 			
-			Dans le cas de la déconnexion ou du message public, il n'est pas nécessaire d'ajouter dans la liste la chaine autant de fois qu'il y a de destinataires différents : le destinataire sera "tout le monde", ce qui évite de remplir la liste trop rapidement. Les messages de connexions ne sont pas traités par ce thread mais sont aussi ajoutés à la liste de message.
+			Dans le cas de la déconnexion ou du message public, le message est ajouté à la file autant de fois qu'il y a de destinataires afin de permettre un traitement plus rapide (un envoi = un défilage).
 			
 		\subsection{Thread d'écriture}
-			Un thread d'écriture a pour mission d'envoyer le message dans à la personne concernée. Pour cela, il lit en boucle le contenu de la file de message. Lorsqu'un message concerne l'utilisateur auquel il est lié, il l'enlève de la liste en bloquant le mutex puis le traite. Il en extrait le type d'information (publique, privée ou (dé)connexion), l'émetteur et le message.
+			Un thread d'écriture est lui aussi associé à un et un seul client, et a pour mission d'envoyer les messages destinés à ce dernier. Pour cela, il lit en boucle le contenu de la file de message. Lorsqu'un message concerne l'utilisateur auquel il est lié, il l'enlève de la file en bloquant le mutex puis le traite. Il en extrait le type d'information (publique, privée ou (dé)connexion), l'émetteur et le message.
 			
 			Il suffit ensuite de transmettre le message via le socket correspondant, le client fera ensuite le reste du traitement.
 			
@@ -89,7 +89,9 @@
 			
 			La première est celle de l'initialisation de la connexion. L'application demande des informations de connexion à l'utilisateur telles que le pseudo qu'il souhaite utiliser, son adresse IP (récupérée automatiquement mais dont on laisse la possibilité de modifier en cas d'erreur), ainsi que l'adresse IP et le port du serveur distant. Lorsque ces informations ont été récupérées, un paquet est forgé puis envoyé au serveur, qui va initialiser une connexion. Si quelque chose ne se passe pas correctement, l'application ferme en affichant un message d'erreur explicitant le problème.\\
 			
-			Dans le cas contraire, un FFFFRAIDE est créé. {\Huge TODO}\\
+			Dans le cas contraire, un thread de lecture est créé. Ce thread est exécuté indépendamment de l'interface graphique (qui est elle-même un thread créé par Qt). Lorsqu'un message est reçu, c'est ce thread qui va le recevoir et le traiter pour finalement demander l'affichage de ces informations à l'interface graphique.\\
+		 
+			La troisième fonction, l'écriture sur le socket, s'effectue quant à elle via le thread de l'interface graphique. A chaque signal reçu par l'interface, ce dernier est traité et un message est forgé pour être écrit sur le socket.
 	
 			\newpage
 			Pour résumer, voici un schéma simplifié du fonctionnement des clients et du serveur lors de l'envoi de messages privés ou publics :
@@ -101,9 +103,8 @@
 			\end{figure}
 			\FloatBarrier
 		
-			La dernière fonction est l'affichage de l'interface graphique, ainsi que la communication entre cette interface et le thread de communication avec le serveur. Nous détaillons cette fonction dans la partie suivante.
 	
-		\newpage
+	
 		\subsection{L'interface graphique}
 			Étant donné que nous avons déjà utilisé Pidgin\footnote{Logiciel de messagerie} et l'avons trouvé \emph{user-friendly} et plutôt simple dans sa conception, nous nous en sommes inspirés.\\
 			
