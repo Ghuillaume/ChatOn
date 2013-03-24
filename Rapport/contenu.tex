@@ -31,7 +31,7 @@
 		\begin{figure}[h!]
 			\centering
 			\includegraphics[scale=0.45]{protocol.png}
-			\caption{Présentation générale du protocole utilisé}
+			\caption{Présentation générale du protocole utilisé.}
 		\end{figure}
 		\FloatBarrier
 		
@@ -45,15 +45,18 @@
 		\end{itemize}
 		
 		Le protocole est donc très simple. Mais l'implémentation l'est moins du fait que le serveur doive pouvoir gérer plusieurs clients simultannément. Nous détaillerons donc le fonctionnement du serveur dans le chapitre suivant.
-		
 	
 	\section{Fonctionnement du serveur}
 		
 		Côté serveur, il nous a paru évident qu'il faille implémenter une file de messages à envoyer de manière à ce que la réception de données ne soit pas bloquante. Pour utiliser cette file correctement, nous avons donc besoin de deux threads par client : un thread qui scrute la réception des requêtes du client et qui agit en conséquence, ainsi qu'un thread qui parcourt constamment la file de message afin de récupérer les messages à envoyer au client pour les retransmettre ensuite.
 	
 		\subsection{Liste des utilisateurs connectés}
-			{\Huge TODO} \\
-			détails de l'implémentation + quand est-ce qu'elle est mise à jour ?
+			
+			La liste des utilisateurs est un tableau de pointeurs vers des structures de données "utilisateurs" contenant deux chaînes de caractères : le pseudonyme (30 caractères maximum) et l'IP v4 (entre 7 et 15 caractères). Ce tableau est fixé en dur dans le code à 10 utilisateurs maximums simultanément pour ne pas surcharger le serveur dans le traitement des messages et des connexions/déconnexions.
+			
+			Lors de la demande de connexion d'un utilisateur, le serveur vérifie tout d'abord qu'il existe un emplacement libre pour un utilisateur supplémentaire (via une variable protégée par un mutex contenant le nombre de connexions en cours). Si la réponse est affirmative, les données de l'utilisateur sont ajoutées au tableau mais dans le cas contraire, l'utilisateur est informé de l'impossibilité de connexion et l'échange entre le client et le serveur s'arrête.
+			
+			Dans le cadre d'une déconnexion, le pointeur vers l'utilisateur dans la liste des connectés est mis à NULL et la structure est détruite. De plus, le nombre de personnes connectées est décrémenté pour faire de la place pour les suivants.
 			
 		\subsection{File de messages}
 			La file de message est une structure C implémentée sous la forme d'une liste chainée. Chaque noeud contient plusieurs chaines de caractères décrivant le message à envoyer, l'expéditeur du message, ainsi que son destinataire.
@@ -63,10 +66,21 @@
 			Cette file étant consultée et remplie par plusieurs threads à la fois, il est impératif de la protéger par un sémaphore d'exclusion mutuelle (mutex) qui la protège d'erreurs de pointeur (ajout dans la file alors qu'une opération sur les pointeurs est actuellement en cours, par exemple).
 			
 		\subsection{Thread de lecture}
-			se présente sous la forme d'un protocole (1 string = 1 action)
+			Un thread de lecture correspond à une communication avec un seul client, il y a donc autant de threads de lecture que d'utilisateurs. Lorsqu'une commande est envoyée au serveur, le serveur la traite et la transforme en un message avec une chaine de caractère de cette forme :
+			\begin{itemize}
+				\item \og pv;message \fg pour les messages publics;
+				\item \og all;message \fg pour les messages privés;
+				\item \og disconnected;pseudonyme \fg pour les déconnexions.
+			\end{itemize}
+			
+			De cette manière, une chaîne de caractère correspond à une une action entre deux utilisateurs. Le message est ajoutée ensuite dans la liste avec le pseudo de l'expéditeur et du destinataire. Cependant, il est nécessaire de bloquer le sémaphore d'exclusion mutuelle pour ajouter afin d'éviter les écrasements de données ou autres conflits. 
+			
+			Dans le cas de la déconnexion ou du message public, il n'est pas nécessaire d'ajouter dans la liste la chaine autant de fois qu'il y a de destinataires différents : le destinataire sera "tout le monde", ce qui évite de remplir la liste trop rapidement. Les messages de connexions ne sont pas traités par ce thread mais sont aussi ajoutés à la liste de message.
 			
 		\subsection{Thread d'écriture}
-			idem
+			Un thread d'écriture a pour mission d'envoyer le message dans à la personne concernée. Pour cela, il lit en boucle le contenu de la file de message. Lorsqu'un message concerne l'utilisateur auquel il est lié, il l'enlève de la liste en bloquant le mutex puis le traite. Il en extrait le type d'information (publique, privée ou (dé)connexion), l'émetteur et le message.
+			
+			Il suffit ensuite de transmettre le message via le socket correspondant, le client fera ensuite le reste du traitement.
 			
 	
 	\section{Fonctionnement du client}
@@ -76,10 +90,20 @@
 			La première est celle de l'initialisation de la connexion. L'application demande des informations de connexion à l'utilisateur telles que le pseudo qu'il souhaite utiliser, son adresse IP (récupérée automatiquement mais dont on laisse la possibilité de modifier en cas d'erreur), ainsi que l'adresse IP et le port du serveur distant. Lorsque ces informations ont été récupérées, un paquet est forgé puis envoyé au serveur, qui va initialiser une connexion. Si quelque chose ne se passe pas correctement, l'application ferme en affichant un message d'erreur explicitant le problème.\\
 			
 			Dans le cas contraire, un FFFFRAIDE est créé. {\Huge TODO}\\
-			
+	
+			\newpage
+			Pour résumer, voici un schéma simplifié du fonctionnement des clients et du serveur lors de l'envoi de messages privés ou publics :
+		
+			\begin{figure}[h!]
+				\centering
+				\includegraphics[scale=0.6]{echanges.png}
+				\caption{Cheminement des messages lors de la communication inter-clients.}
+			\end{figure}
+			\FloatBarrier
+		
 			La dernière fonction est l'affichage de l'interface graphique, ainsi que la communication entre cette interface et le thread de communication avec le serveur. Nous détaillons cette fonction dans la partie suivante.
 	
-	
+		\newpage
 		\subsection{L'interface graphique}
 			Étant donné que nous avons déjà utilisé Pidgin\footnote{Logiciel de messagerie} et l'avons trouvé \emph{user-friendly} et plutôt simple dans sa conception, nous nous en sommes inspirés.\\
 			
